@@ -27,11 +27,13 @@ def augmented_polygon(corners, offset):
     center_x, center_y = np.mean(corners, axis=0)
     augmented_corners = []
     for corner in corners:
-        x_dist = corner[0] - center_x
-        y_dist = corner[1] - center_y
-        alpha = offset/np.sqrt(x_dist**2 + y_dist**2)
-        delta_x = alpha * x_dist
-        delta_y = alpha * y_dist
+        dist_y = corner[0] - center_x
+        dist_x = corner[1] - center_y
+        dist_center = np.sqrt(dist_x**2 + dist_y**2)
+        if dist_center!=0: alpha = offset/dist_center
+        else: alpha = 0
+        delta_x = alpha * dist_x
+        delta_y = alpha * dist_y
         
         augmented_corners.append([corner[0] + delta_x, corner[1] + delta_y])
     return np.round(augmented_corners).astype(np.int32)
