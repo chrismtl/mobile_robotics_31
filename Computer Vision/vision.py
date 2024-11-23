@@ -12,6 +12,9 @@ os.system('cls')
 MARKER_SIZE_ROBOT = 0.1     # Side length of the ArUco marker in meters 
 FIRST_FRAME = 50            # First frame to analyse
 ROBOT_RADIUS = 50
+MIN_AREA = 10
+MAX_AREA = 2000
+CAMERA_CALIBRATION_FILE = 'calibration_chessboard.yaml'
 
 def rescaleFrame(frame, scale=0.75):
     height = int(frame.shape[0] * scale)
@@ -32,6 +35,13 @@ class Map:
         self.found_robot = False
         self.found_destination = False
         self.obstacles = []
+        
+        # Load the camera parameters from the saved file
+        cv_file = cv.FileStorage(
+            CAMERA_CALIBRATION_FILE, cv.FILE_STORAGE_READ) 
+        self.camera_matrix = cv_file.getNode('K').mat()
+        self.dist_coeffs = cv_file.getNode('D').mat()
+        cv_file.release()
 
     def info(self):
         print("===== MAP INFO =====")
@@ -45,9 +55,14 @@ class Map:
 
     def update(self):
         success, self.frame = self.capture.read()
+        #self.frame = cv.undistort(self.frame, self.camera_matrix, self.dist_coeffs)
+        # Reset obstacles
+        self.obstacles = []
+        if not success:
+            print("Warning: Failed to capture new frame")
     
     def scan_arucos(self):
-        aruco_markers = aruco.get_arucos(self.frame, MARKER_SIZE_ROBOT)
+        aruco_markers = aruco.get_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
         
         if len(aruco_markers):
             # Debug
@@ -81,9 +96,10 @@ class Map:
         contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         
         # Show edge detection
-        #cv.imshow("Edges", frame)
-
+        cv.imshow("Edges", frame)
+        
         # Approximate the contour to a polygon and extract corners
+        
         for contour in contours:
             epsilon = 0.025 * cv.arcLength(contour, True)  # 2% of the perimeter
             approx_corners = cv.approxPolyDP(contour, epsilon, True)
@@ -91,14 +107,16 @@ class Map:
             if len(approx_corners) >= 3:  # Ensure it's a valid polygon
                 corners = approx_corners.reshape(-1, 2) # Extract the corners
                 corners = geom.remove_close_points(corners) # Remove duplicates
-                corners = geom.augmented_polygon(corners,ROBOT_RADIUS) # Compute augmented obstacle
+                #corners = geom.augmented_polygon(corners,ROBOT_RADIUS) # Compute augmented obstacle
+                
                 self.obstacles.append(corners)  # Add the obstacles to our obstacle list
 
+        self.obstacles = [contour for contour in self.obstacles if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
+        #print(self.obstacles)
 
     def draw(self):
         # Draw robot
         if self.found_robot:
-            print("Printing robot")
             cv.drawContours(self.frame, self.robot[2], -1, (255,0,0), 5)
         # Draw the robot orientation
         
@@ -107,9 +125,11 @@ class Map:
             cv.drawContours(self.frame, self.destination[2], -1, (0,255,0), 5)
         
         # Draw obstacle
+        print()
         for obstacle in self.obstacles:
+            print(obstacle)
             cv.polylines(self.frame, [obstacle], isClosed=True, color=(0, 0, 255), thickness=5)
-
+        
         cv.imshow('Camera',self.frame)
         
     def visibility_graph():
@@ -117,7 +137,6 @@ class Map:
         
     def output_navigation(self):
         # Create visibility graph
-        
         return []
 
     def vision_stop(self):
@@ -127,18 +146,16 @@ if __name__ == '__main__':
     os.system('cls')
        
     map = Map()
-    
     while True:
         map.update()
         map.scan_arucos()
         map.detect_obstacles()   
         map.draw()
         if cv.waitKey(10) != -1:
-            print("== Key pressed ===")
+            map.vision_stop()
             break
-        
+    
     map.info()
-    map.vision_stop()
     cv.destroyAllWindows()
     
     

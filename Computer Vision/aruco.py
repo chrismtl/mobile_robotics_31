@@ -6,16 +6,7 @@ import geometry as geom
 CV_DRAW = True
 ARUCO_DICTIONARY = cv.aruco.DICT_4X4_50
 
-# Calibration parameters yaml file
-camera_calibration_parameters_filename = 'calibration_chessboard.yaml'
-  
-def get_arucos(frame, marker_size):
-    # Load the camera parameters from the saved file
-    cv_file = cv.FileStorage(
-        camera_calibration_parameters_filename, cv.FILE_STORAGE_READ) 
-    camera_matrix = cv_file.getNode('K').mat()
-    dist_coeffs = cv_file.getNode('D').mat()
-    cv_file.release()
+def get_arucos(frame, marker_size, camera_matrix, dist_coeffs):
     
     # Load the ArUco dictionary
     aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY)
