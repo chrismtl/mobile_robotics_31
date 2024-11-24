@@ -138,6 +138,9 @@ class Map:
     def output_navigation(self):
         # Create visibility graph
         return []
+    
+    def get_obstacles(self):
+        return self.obstacles
 
     def vision_stop(self):
         self.capture.release()

@@ -75,7 +75,7 @@ def get_rotations(rotation_matrix):
                                                 transform_rotation_y, 
                                                 transform_rotation_z, 
                                                 transform_rotation_w)
-
+    
     roll_x = round(math.degrees(roll_x), 2)
     pitch_y = round(math.degrees(pitch_y), 2)
     yaw_z = round(math.degrees(yaw_z), 2)
