@@ -1,7 +1,6 @@
 import cv2 as cv
 import numpy as np
 from . import geometry as geom
-from operator import itemgetter
 from .constants import *
 
 # CONSTANTS
