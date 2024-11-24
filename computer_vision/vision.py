@@ -1,20 +1,13 @@
 import os
 import cv2 as cv
 import numpy as np
-import aruco
+from .aruco import *
 from scipy.spatial.transform import Rotation as R
-import geometry as geom
+from .geometry import *
+from .constants import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.system('cls')
-
-# === CONSTANTS ===
-MARKER_SIZE_ROBOT = 0.1     # Side length of the ArUco marker in meters 
-FIRST_FRAME = 50            # First frame to analyse
-ROBOT_RADIUS = 50
-MIN_AREA = 10
-MAX_AREA = 2000
-CAMERA_CALIBRATION_FILE = 'calibration_chessboard.yaml'
 
 def rescaleFrame(frame, scale=0.75):
     height = int(frame.shape[0] * scale)
@@ -30,6 +23,7 @@ class Map:
             self.capture.read()
             
         success, self.frame = self.capture.read()
+        self.raw_frame = self.frame.copy()
         self.robot = np.zeros((1,3))
         self.destination = np.zeros(3)
         self.found_robot = False
@@ -42,35 +36,55 @@ class Map:
         self.camera_matrix = cv_file.getNode('K').mat()
         self.dist_coeffs = cv_file.getNode('D').mat()
         cv_file.release()
-
+        
+        # Create the mask of the map
+        map_corners = get_corner_arucos(self.frame)
+        if ('top_left' in map_corners.keys()) and ('bottom_right' in map_corners.keys()):
+            self.corners = [map_corners['top_left'], map_corners['bottom_right']]        
+        else:
+            print("ERROR: Could not detect map corners")
+            print(map_corners)
     def info(self):
         print("===== MAP INFO =====")
         if self.found_robot:
             print("ROBOT:")
             print(f"Position: {self.robot[0]}")
             print(f"Orientation: {self.robot[1]}\n")
+        else:
+            print("ROBOT: Not found")
         if self.found_destination:
             print("DESTINATION:")
             print(f"Position: {self.destination[0]}")
+        else:
+            print("DESTINATION: Not found")
+        if len(self.obstacles):
+            print("OBSTACLES:",len(self.obstacles))
+        else:
+            print("OBSTACLES: Not found")
 
     def update(self):
-        success, self.frame = self.capture.read()
+        success, self.raw_frame = self.capture.read()
         #self.frame = cv.undistort(self.frame, self.camera_matrix, self.dist_coeffs)
+        
+        # Only keep the region inside the 4 aruco codes
+        self.frame = self.raw_frame[self.corners[0][1]:self.corners[1][1], self.corners[0][0]:self.corners[1][0]].copy()
         # Reset obstacles
         self.obstacles = []
         if not success:
             print("Warning: Failed to capture new frame")
     
+    def set_frame(self,frame):
+        self.frame = frame
+    
     def scan_arucos(self):
-        aruco_markers = aruco.get_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
+        aruco_markers = get_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
         
         if len(aruco_markers):
-            # Debug
-            if 0 in aruco_markers.keys():
+            if 1 in aruco_markers.keys():
                 print("Robot found")
                 self.robot = aruco_markers[0]
                 self.found_robot = True
-            if 1 in aruco_markers.keys():
+            if 2 in aruco_markers.keys():
                 print("Destination found")
                 self.destination = aruco_markers[1]
                 self.found_destination = True
@@ -78,23 +92,13 @@ class Map:
     def detect_obstacles(self):
         # Create local copy of the frame that we will use for treatment
         frame = self.frame.copy()
-        
-        # Mask out the robot and the destination
-        if self.found_robot:
-            mask_robot = [geom.augmented_polygon(self.robot[2][0], 6)]
-            cv.fillPoly(frame, mask_robot, (255, 255, 255))
-            
-        if self.found_destination:
-            mask_destination = [geom.augmented_polygon(self.destination[2][0], 6)]
-            cv.fillPoly(frame, mask_destination, (255, 255, 255))
-        
         # Detect edges
         frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        # Blur the image
+        frame = cv.GaussianBlur(frame, (5, 5),0)
         frame = cv.Canny(frame, 50, 150)
-        
         # Detect contours
-        contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-        
+        contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
         # Show edge detection
         cv.imshow("Edges", frame)
         
@@ -107,30 +111,34 @@ class Map:
             if len(approx_corners) >= 3:  # Ensure it's a valid polygon
                 corners = approx_corners.reshape(-1, 2) # Extract the corners
                 corners = geom.remove_close_points(corners) # Remove duplicates
-                #corners = geom.augmented_polygon(corners,ROBOT_RADIUS) # Compute augmented obstacle
+                corners = geom.augmented_polygon(corners) # Compute augmented obstacle
                 
                 self.obstacles.append(corners)  # Add the obstacles to our obstacle list
 
         self.obstacles = [contour for contour in self.obstacles if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
-        #print(self.obstacles)
 
     def draw(self):
         # Draw robot
         if self.found_robot:
-            cv.drawContours(self.frame, self.robot[2], -1, (255,0,0), 5)
+            cv.drawContours(self.frame, self.robot[2], -1, (255,0,0), LINE_THICKNESS)
         # Draw the robot orientation
         
         # Draw destination
         if self.found_destination:
-            cv.drawContours(self.frame, self.destination[2], -1, (0,255,0), 5)
+            cv.drawContours(self.frame, self.destination[2], -1, (0,255,0), LINE_THICKNESS)
         
         # Draw obstacle
-        print()
         for obstacle in self.obstacles:
-            print(obstacle)
-            cv.polylines(self.frame, [obstacle], isClosed=True, color=(0, 0, 255), thickness=5)
-        
-        cv.imshow('Camera',self.frame)
+            if DISPLAY_OBSTACLES=="POLYGON":
+                cv.polylines(self.frame, [obstacle], isClosed=True, color=(0, 0, 255), thickness=LINE_THICKNESS)
+            elif DISPLAY_OBSTACLES=="POINTS":
+                for point in obstacle:
+                    cv.circle(self.frame,point,3,(255,0,0),LINE_THICKNESS)
+            else:
+                print("Error: Wrong DISPLAY_OBSTACLES value !")
+            
+        cv.imshow('Masked',self.frame)
+        cv.imshow('Raw',self.raw_frame)
         
     def visibility_graph():
         return []
@@ -144,21 +152,5 @@ class Map:
 
     def vision_stop(self):
         self.capture.release()
-   
-if __name__ == '__main__':
-    os.system('cls')
-       
-    map = Map()
-    while True:
-        map.update()
-        map.scan_arucos()
-        map.detect_obstacles()   
-        map.draw()
-        if cv.waitKey(10) != -1:
-            map.vision_stop()
-            break
-    
-    map.info()
-    cv.destroyAllWindows()
     
     
