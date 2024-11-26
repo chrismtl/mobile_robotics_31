@@ -16,7 +16,7 @@ def collision_avoidance(nodes_slopes, pose_est, error_est, prox, old_obstacle):
     obj_right = 0      # 1 = object detected on the right, 0 = object detected on the left
     
     await node.wait_for_variables()
-    prox = node.get_variable("prox.horizontal")  # Lire les valeurs des capteurs de proximité
+    prox = node['prox.horizontal'] # Lire les valeurs des capteurs de proximité
 
     #Let's check if we reached a segment of the global path
     for i in range (0, nodes_slopes.shape[0]-1):
