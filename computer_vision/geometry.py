@@ -1,8 +1,9 @@
 import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from .constants import *
 
-def remove_close_points(corners, threshold=10):
+def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
     # Create a new list
     clean_corners = corners.copy()
     
@@ -23,20 +24,13 @@ def remove_close_points(corners, threshold=10):
 
     return clean_corners
 
-def augmented_polygon(corners, offset):
-    center_x, center_y = np.mean(corners, axis=0)
-    augmented_corners = []
-    for corner in corners:
-        dist_y = corner[0] - center_x
-        dist_x = corner[1] - center_y
-        dist_center = np.sqrt(dist_x**2 + dist_y**2)
-        if dist_center!=0: alpha = offset/dist_center
-        else: alpha = 0
-        delta_x = alpha * dist_x
-        delta_y = alpha * dist_y
-        
-        augmented_corners.append([corner[0] + delta_x, corner[1] + delta_y])
-    return np.round(augmented_corners).astype(np.int32)
+def augmented_polygon(corners, scale_factor=SCALE_FACTOR):     
+    center = corners.mean(axis=0)
+    
+    # Translate vertices to origin (center as reference), scale, and translate back
+    scaled_vertices = (corners - center) * scale_factor + center
+    
+    return np.round(scaled_vertices).astype(np.int32)
 
 def euler_from_quaternion(x, y, z, w):
     """
@@ -75,7 +69,7 @@ def get_rotations(rotation_matrix):
                                                 transform_rotation_y, 
                                                 transform_rotation_z, 
                                                 transform_rotation_w)
-
+    
     roll_x = round(math.degrees(roll_x), 2)
     pitch_y = round(math.degrees(pitch_y), 2)
     yaw_z = round(math.degrees(yaw_z), 2)
