@@ -174,7 +174,7 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     speed = np.zeros(2)
     y_mean = coordinates[0,1]
     x_mean = coordinates[0,1]
-    theta_mean = coordinates[0,2]
+    theta_mean = -1*coordinates[0,2]
     #theta_mean = math.radians(theta_mean) #si angle en degres
 
     tolerance_norm = 1
