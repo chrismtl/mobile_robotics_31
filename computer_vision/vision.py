@@ -35,7 +35,6 @@ class Map:
         # Get aruco in the corners
         self.map_corners = get_corner_arucos(self.frame)
 
-        print(self.map_corners)
         if len(self.map_corners)==4:
             self.initial_frame = self.flatten_scene(self.raw_frame)
 
@@ -91,11 +90,12 @@ class Map:
         #self.map_corners = get_corner_arucos(self.raw_frame)
         if len(self.map_corners)==4:
             self.frame = self.flatten_scene(self.raw_frame)
-        # Reset obstacles
-        #self.obstacles = []
+            
         if not success:
             print("Warning: Failed to capture new frame")
         self.find_robot()
+        
+        self.show()
     
     def set_frame(self,frame):
         self.frame = frame

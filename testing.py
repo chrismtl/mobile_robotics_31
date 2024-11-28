@@ -15,7 +15,6 @@ map = Map()
 
 while True:
     map.update()
-    map.show()
     if cv.waitKey(1) != -1:
         map.vision_stop()
         break
