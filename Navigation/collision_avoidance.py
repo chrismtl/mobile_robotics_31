@@ -1,12 +1,11 @@
 import tdmclient.notebook
-from Navigation_utils import *
 from tdmclient import ClientAsync, aw
 #await tdmclient.notebook.start()
 
 def collision_avoidance(nodes_slopes, pose_est, error_est, old_obstacle, segment):
     speed_turn_left = [-25,50]       #Actuation for turning left
     speed_turn_right = [50,-25]      #Actuation for turning right
-    actuation = [0,0]
+    actuation = np.zeros(2)
     #obstThrL = 10      # Low threshold for which the robot exits the avoidance obstacle
     obstThrH = 20      # High threshold for which the robot enters the avoidance obstacle
     obstacle = 0         # 0 = no obstacle, 1 = obstacle avoidance 
