@@ -1,12 +1,11 @@
 import tdmclient.notebook
-from Navigation_utils import *
 from tdmclient import ClientAsync, aw
 #await tdmclient.notebook.start()
 
-def collision_avoidance(nodes_slopes, pose_est, error_est, prox, old_obstacle):
+def collision_avoidance(nodes_slopes, pose_est, error_est, old_obstacle, segment):
     speed_turn_left = [-25,50]       #Actuation for turning left
     speed_turn_right = [50,-25]      #Actuation for turning right
-    actuation = [0,0]
+    actuation = np.zeros(2)
     #obstThrL = 10      # Low threshold for which the robot exits the avoidance obstacle
     obstThrH = 20      # High threshold for which the robot enters the avoidance obstacle
     obstacle = 0         # 0 = no obstacle, 1 = obstacle avoidance 
@@ -18,16 +17,23 @@ def collision_avoidance(nodes_slopes, pose_est, error_est, prox, old_obstacle):
     await node.wait_for_variables()
     prox = node['prox.horizontal'] # Lire les valeurs des capteurs de proximité
 
+    if old_obstacle == 0:       # The robot is not in the avoidance mode
+        for i in range (5):     # Let's find if there is an obstacle in front of the robot
+            if prox[i] > obstThrH:
+                obstacle = 1
+        if obstacle == 0:
+            return actuation, obstacle, segment
+
     #Let's check if we reached a segment of the global path
     for i in range (0, nodes_slopes.shape[0]-1):
         alpha = nodes_slopes[i,2]
         beta = nodes_slopes[i,3]
-        x_path = [nodes_slopes[i,0], nodes_slopes[i,1]]
-        y_path = [nodes_slopes[i+1,0], nodes_slopes[i+1,1]]
+        x_path = [nodes_slopes[i,0], nodes_slopes[i+1,0]]       
+        y_path = [nodes_slopes[i,1], nodes_slopes[i+1,1]]
         x_path.sort()
         y_path.sort()
         if ((x_path[0] - error_est[0] <= pose_est[0] <= x_path[1] + error_est[0]) 
-            and (y_path[1] - error_est[1] <= pose_est[1] <= y_path[1] + error_est[1])):
+            and (y_path[0] - error_est[1] <= pose_est[1] <= y_path[1] + error_est[1])):
             pose_y_min = pose_est[1] - error_est[1]
             pose_y_max = pose_est[1] + error_est[1]
 
@@ -37,17 +43,14 @@ def collision_avoidance(nodes_slopes, pose_est, error_est, prox, old_obstacle):
             if alpha < 0:                   # If alpha is negative, we have to inverse the boundaries
                 fx_min, fx_max = fx_max, fx_min
 
-            if (pose_y_min <= fx_max) and (fx_min <= pose_y_max):
+            if (pose_y_min <= fx_max <= pose_y_max) or (pose_y_min <= fx_min <= pose_y_max):
                 path_reached = 1
+                segment = i
             else:
                 path_reached = 0
-            
-    if old_obstacle == 0:
-        for i in range (6):
-            if prox[i] > obstThrH:
-                obstacle = 1
-    else:          
-        for i in range (6):     # find if the obstacle is on the left or on the right
+
+    if old_obstacle == 1:
+        for i in range (5):     # find if the obstacle is on the left or on the right
             if prox[i] > obstThrH:
                 close_obst = close_obst + 1
                 if i>2:
@@ -59,7 +62,7 @@ def collision_avoidance(nodes_slopes, pose_est, error_est, prox, old_obstacle):
         if close_obst == 0:
             if path_reached == 1:
                 obstacle = 0
-                return actuation, obstacle
+                return actuation, obstacle, segment
     
     # Now, let's actuate the robot in order to surround the obstacle
     #leds_top = [30,30,30]
@@ -81,4 +84,4 @@ def collision_avoidance(nodes_slopes, pose_est, error_est, prox, old_obstacle):
             actuation[0] = actuation[0] + x[i] * w_l[i]
             actuation[1] = actuation[1] + x[i] * w_r[i]
 
-        return actuation, obstacle
+        return actuation, obstacle, segment
