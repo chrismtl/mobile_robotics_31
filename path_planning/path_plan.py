@@ -64,14 +64,14 @@ def path_functions(shortest_path):
 
 
 # %%
-def a_star_search(points,ex_path):
+def a_star_search(start,end,points,ex_path):
     """
     A* 
 
-    input: 
-        points: N x 2 array (N = (# of corners) + 2), where:
-            - The first row represents the start position.
-            - The second row represents the goal position.
+    input:
+        start
+        end 
+        points: N x 2 array (N = (# of corners) ), where:
             - The remaining rows contain the coordinates of the extended corners.
         ex_path: N X N, is equal to 1 if two corners are directly connected 
               by a line that does not cross any obstacle, and 0 otherwise.
@@ -83,6 +83,7 @@ def a_star_search(points,ex_path):
 
     
     # Initialize the open set as a priority queue and add the start node
+    points = np.vstack([start, end, points])
     open_set = []
     start_index = 0
     start = points[0,:]
@@ -246,6 +247,7 @@ def compute_visibility_matrix(obstacles):
     output:
         Visibility_mat : (N x N) Visibility_mat(i,j) is equal to 1 if a path exist between the ith corner
                             and the jth corner, if not  it's equal to 0.
+        corners
     """
     # Flatten the list of obstacles to get all corners
     corners = [corner for obstacle in obstacles for corner in obstacle]
@@ -289,7 +291,7 @@ def compute_visibility_matrix(obstacles):
                         break
 
 
-    return matrix
+    return matrix, corners
 
 def are_adjacent_corners(corner1, corner2, obstacle_corners):
     """
@@ -309,32 +311,32 @@ def are_adjacent_corners(corner1, corner2, obstacle_corners):
 
 # %% test
 
-obstacles = [
-    [(0, 0), (1, 0), (1, 1), (0, 1)],  
-    [(2, 2), (3, 2), (3, 3), (2, 3)]   
-]
-matrix = compute_visibility_matrix(obstacles)
-print(matrix)
+# obstacles = [
+#     [(0, 0), (1, 0), (1, 1), (0, 1)],  
+#     [(2, 2), (3, 2), (3, 3), (2, 3)]   
+# ]
+# matrix = compute_visibility_matrix(obstacles)
+# print(matrix)
 
 
  
 
 # %% test 
 
-points = np.array([[0, 0], [16, 0], [4, 0] , [8, 8], [4, 4]])
-ex_path =  np.array([[1,0 ,1, 1, 1], [0,1 ,0, 1, 1], [1,0 ,1, 1, 1], [1,1 ,1, 1, 1], [1,1 ,1, 1, 1]])
-path= a_star_search(points,ex_path)
-nodes = path_functions(path)
-coordinates = np.array([[2, 0, 30], [0.2, 0.2,0]])
-segment_index = 0
-speed,segment_index2,end = path_direction(coordinates, nodes, segment_index)
+# points = np.array([[0, 0], [16, 0], [4, 0] , [8, 8], [4, 4]])
+# ex_path =  np.array([[1,0 ,1, 1, 1], [0,1 ,0, 1, 1], [1,0 ,1, 1, 1], [1,1 ,1, 1, 1], [1,1 ,1, 1, 1]])
+# path= a_star_search(points,ex_path)
+# nodes = path_functions(path)
+# coordinates = np.array([[2, 0, 30], [0.2, 0.2,0]])
+# segment_index = 0
+# speed,segment_index2,end = path_direction(coordinates, nodes, segment_index)
 
 
-corners = [(1, 1), (2, 3), (4, 4), (5, 2)]  
-obstacles = [[(3, 1), (3, 2), (4, 2), (4, 1)]] 
+# corners = [(1, 1), (2, 3), (4, 4), (5, 2)]  
+# obstacles = [[(3, 1), (3, 2), (4, 2), (4, 1)]] 
 
-visibility_matrix = compute_visibility_matrix(corners, obstacles)
-print(visibility_matrix)
+# visibility_matrix = compute_visibility_matrix(corners, obstacles)
+# print(visibility_matrix)
 
 
 
