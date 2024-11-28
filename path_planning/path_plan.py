@@ -157,9 +157,8 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     Find the right motor speed so the robot follows the rigth seglent
 
     input: 
-        coordinates: 2 x 3 array, where:
+        coordinates: 1 x 3 array, where:
             - The first row represents the mean of x, y and theta coordinates.
-            - The second row represents the standard deviation.
         nodes_slopes = M x 5 (M = number of nodes in the shortest path), where 
         each row represents the node's coordinates along with the 
         alpha and beta coefficients, the last colomn represents the direction 
@@ -286,7 +285,6 @@ def compute_visibility_matrix(obstacles):
             else:
                 for poly in obstacle_polygons:
                     if line.intersects(poly) and not line.touches(poly.boundary):
-                        print("ici")
                         matrix[i, j] = 0
                         break
 
