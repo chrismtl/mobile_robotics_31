@@ -35,6 +35,11 @@ class Map:
         
         # Get aruco in the corners
         self.map_corners = get_corner_arucos(self.frame)
+
+        if len(self.map_corners)==4:
+            self.initial_frame = self.flatten_scene(self.raw_frame)
+
+        self.detect_obstacles()
         
         # Load the camera parameters from the saved file
         cv_file = cv.FileStorage(
@@ -82,15 +87,15 @@ class Map:
     
     def update(self):
         success, self.raw_frame = self.capture.read()
-        #self.frame = cv.undistort(self.frame, self.camera_matrix, self.dist_coeffs)
         # Only keep the region inside the 4 aruco codes
-        self.map_corners = get_corner_arucos(self.raw_frame)
+        #self.map_corners = get_corner_arucos(self.raw_frame)
         if len(self.map_corners)==4:
             self.frame = self.flatten_scene(self.raw_frame)
         # Reset obstacles
-        self.obstacles = []
+        #self.obstacles = []
         if not success:
             print("Warning: Failed to capture new frame")
+        self.find_robot()
     
     def set_frame(self,frame):
         self.frame = frame
@@ -99,33 +104,33 @@ class Map:
         aruco_markers = get_rt_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
         
         if len(aruco_markers):
-            if 1 in aruco_markers.keys():
-                print("Robot found")
-                self.robot = aruco_markers[0]
+            if 4 in aruco_markers.keys():
+                self.robot = aruco_markers[4]
+                #print("Robot found")
                 self.found_robot = True
-            if 2 in aruco_markers.keys():
-                print("Destination found")
-                self.destination = aruco_markers[1]
+            if 5 in aruco_markers.keys():
+                self.destination = aruco_markers[5]
+                #print("Destination found")
                 self.found_destination = True
     
     def detect_obstacles(self):
         # Create local copy of the frame that we will use for treatment
-        frame = self.frame.copy()
+        frame = self.initial_frame.copy()
         # Detect edges
         frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         # Blur the image
         frame = cv.GaussianBlur(frame, (5, 5),0)
         frame = cv.Canny(frame, 50, 150)
         # Detect contours
-        contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         # Show edge detection
         cv.imshow("Edges", frame)
         
         # Approximate the contour to a polygon and extract corners
-        
         for contour in contours:
             epsilon = 0.025 * cv.arcLength(contour, True)  # 2% of the perimeter
             approx_corners = cv.approxPolyDP(contour, epsilon, True)
+            #print(contours)
         
             if len(approx_corners) >= 3:  # Ensure it's a valid polygon
                 corners = approx_corners.reshape(-1, 2) # Extract the corners
@@ -137,27 +142,42 @@ class Map:
         self.obstacles = [contour for contour in self.obstacles if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
 
     def show(self):
-        # Draw robot
+        frame = self.initial_frame.copy()
+
+        cv.line(frame, (0,0), (50,0), (0,0,255), 6)
+        cv.line(frame, (0,0), (0,50), (0,255,0), 6)
+
+        # Draw robot's pose
         if self.found_robot:
-            cv.drawContours(self.frame, self.robot[2], -1, (255,0,0), LINE_THICKNESS)
-        # Draw the robot orientation
+            #print(robot_angle)
+            end_x = int(self.robot[0] + 75 * math.cos(self.robot[2]))
+            end_y = int(self.robot[1] - 75 * -math.sin(self.robot[2]))
+            end_point = (end_x, end_y)
+            cv.arrowedLine(frame, self.robot[0:2], end_point, (1,50,32), 6, tipLength=0.2)
+            cv.circle(frame, self.robot[0:2],5,(0,255,0),-1)
+            #cv.drawContours(self.frame, self.robot[2], -1, (255,0,0), LINE_THICKNESS)
         
         # Draw destination
         if self.found_destination:
-            cv.drawContours(self.frame, self.destination[2], -1, (0,255,0), LINE_THICKNESS)
+            #cv.circle(frame,self.destination[0:2],5,(0,0,255),-1)
+            cv.line(frame, (self.destination[0]-10, self.destination[1]+10), (self.destination[0]+10, self.destination[1]-10), (0,0,255), 3)
+            cv.line(frame, (self.destination[0]+10, self.destination[1]+10), (self.destination[0]-10, self.destination[1]-10), (0,0,255), 3)
+            #cv.drawContours(self.frame, self.destination[2], -1, (0,255,0), LINE_THICKNESS)
         
         # Draw obstacle
+        #print(self.obstacles)
         for obstacle in self.obstacles:
             if DISPLAY_OBSTACLES=="POLYGON":
-                cv.polylines(self.frame, [obstacle], isClosed=True, color=(0, 0, 255), thickness=LINE_THICKNESS)
+                cv.polylines(frame, [obstacle], isClosed=True, color=(0, 0, 255), thickness=LINE_THICKNESS)
             elif DISPLAY_OBSTACLES=="POINTS":
                 for point in obstacle:
-                    cv.circle(self.frame,point,3,(255,0,0),LINE_THICKNESS)
+                    cv.circle(frame,point,3,(255,0,0),LINE_THICKNESS)
             else:
                 print("Error: Wrong DISPLAY_OBSTACLES value !")
             
         cv.imshow('Flatten',self.frame)
         cv.imshow('Raw',self.raw_frame)
+        cv.imshow('Global Navigation frame', frame)
         
     def visibility_graph():
         return []

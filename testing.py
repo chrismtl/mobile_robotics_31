@@ -1,6 +1,5 @@
 from computer_vision.vision import *
 
-
 map = Map()
 
 while True:
