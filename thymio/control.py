@@ -17,7 +17,7 @@ def velocity_with_odometry(node, angle):
     return vel_meas
 
 # Control motors speed
-def motors(l_speed=500, r_speed=500, verbose=False):
+def motors(l_speed=100, r_speed=100, verbose=False):
     """
     Sets the motor speeds of the Thymio 
     param l_speed: left motor speed

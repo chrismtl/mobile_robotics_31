@@ -36,6 +36,7 @@ class Map:
         # Get aruco in the corners
         self.map_corners = get_corner_arucos(self.frame)
 
+        print(self.map_corners)
         if len(self.map_corners)==4:
             self.initial_frame = self.flatten_scene(self.raw_frame)
 
