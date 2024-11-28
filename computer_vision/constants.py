@@ -10,7 +10,7 @@ FIRST_FRAME = 50            # First frame to analyse
 ROBOT_RADIUS = 50
 MIN_AREA = 10
 MAX_AREA = 180000
-CAMERA_CALIBRATION_FILE = 'calibration_chessboard.yaml'
+CAMERA_CALIBRATION_FILE = 'computer_vision\calibration_chessboard.yaml'
 SCALE_FACTOR = 1.5
 DISPLAY_OBSTACLES = "POINTS"
 

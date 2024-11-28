@@ -6,9 +6,6 @@ from scipy.spatial.transform import Rotation as R
 from .geometry import *
 from .constants import *
 
-#os.chdir(os.path.dirname(os.path.abspath(__file__)))
-#os.system('cls')
-
 def rescaleFrame(frame, scale=0.3):
     height = int(frame.shape[0] * scale)
     width = int(frame.shape[1] * scale)
@@ -147,6 +144,7 @@ class Map:
     def show(self):
         frame = self.initial_frame.copy()
 
+        #Draw reference frame
         cv.line(frame, (0,0), (50,0), (0,0,255), 6)
         cv.line(frame, (0,0), (0,50), (0,255,0), 6)
 
