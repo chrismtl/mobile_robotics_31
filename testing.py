@@ -1,8 +1,7 @@
 from computer_vision.vision import *
 
-capture = cv.VideoCapture(0)
-
 def test_camera():
+    capture = cv.VideoCapture(0)
     while True:
         _, frame = capture.read()
 

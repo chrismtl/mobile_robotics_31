@@ -6,7 +6,7 @@ from scipy.spatial.transform import Rotation as R
 from .geometry import *
 from .constants import *
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+#os.chdir(os.path.dirname(os.path.abspath(__file__)))
 #os.system('cls')
 
 def rescaleFrame(frame, scale=0.3):
@@ -32,6 +32,8 @@ class Map:
         self.found_robot = False
         self.found_destination = False
         self.obstacles = []
+        self.obstacles_lines = []
+        self.target_lines = []
         
         # Get aruco in the corners
         self.map_corners = get_corner_arucos(self.frame)
