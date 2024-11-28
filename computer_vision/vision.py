@@ -166,7 +166,6 @@ class Map:
             #cv.drawContours(self.frame, self.destination[2], -1, (0,255,0), LINE_THICKNESS)
         
         # Draw obstacle
-        #print(self.obstacles)
         for obstacle in self.obstacles:
             if DISPLAY_OBSTACLES=="POLYGON":
                 cv.polylines(frame, [obstacle], isClosed=True, color=(0, 0, 255), thickness=LINE_THICKNESS)
@@ -175,6 +174,14 @@ class Map:
                     cv.circle(frame,point,3,(255,0,0),LINE_THICKNESS)
             else:
                 print("Error: Wrong DISPLAY_OBSTACLES value !")
+        
+        #Draw lines between obstacles
+        for obstacles_line in self.obstacles_lines:
+            cv.line(frame, obstacles_line[0], obstacles_line[1], (0,0,0), 1)
+
+        #Draw target_line
+        for target_line in self.target_lines:
+            cv.line(frame, target_line[0], target_line[1], (43,255,255), 3)    
             
         cv.imshow('Flatten',self.frame)
         cv.imshow('Raw',self.raw_frame)
