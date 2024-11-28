@@ -309,6 +309,22 @@ def are_adjacent_corners(corner1, corner2, obstacle_corners):
             return True
     return False
 
+# %%
+
+def possible_lignes(ex_path, corners):
+    N = ex_path.shape[0]
+    lignes = []
+    for i in range(N-1):
+        for j in range(N-1):
+            if ex_path == 1:
+                lignes.append(np.concatenate((corners[i, :], corners[j, :])))
+    
+    lignes = np.array(lignes)
+    return lignes
+
+
+
+
 # %% test
 
 # obstacles = [
