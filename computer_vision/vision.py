@@ -7,9 +7,9 @@ from .geometry import *
 from .constants import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-os.system('cls')
+#os.system('cls')
 
-def rescaleFrame(frame, scale=0.75):
+def rescaleFrame(frame, scale=0.3):
     height = int(frame.shape[0] * scale)
     width = int(frame.shape[1] * scale)
     dimensions = (width, height)
@@ -18,17 +18,23 @@ def rescaleFrame(frame, scale=0.75):
 
 class Map:
     def __init__(self):
+        # Initialilze camera video capture
         self.capture = cv.VideoCapture(0)
+        # Drop the first x frames
         for _ in range(FIRST_FRAME):
             self.capture.read()
-            
-        success, self.frame = self.capture.read()
-        self.raw_frame = self.frame.copy()
+        
+        # Define class attributes
+        success, self.raw_frame = self.capture.read()
+        self.frame = self.raw_frame.copy()
         self.robot = np.zeros((1,3))
         self.destination = np.zeros(3)
         self.found_robot = False
         self.found_destination = False
         self.obstacles = []
+        
+        # Get aruco in the corners
+        self.map_corners = get_corner_arucos(self.frame)
         
         # Load the camera parameters from the saved file
         cv_file = cv.FileStorage(
@@ -36,14 +42,7 @@ class Map:
         self.camera_matrix = cv_file.getNode('K').mat()
         self.dist_coeffs = cv_file.getNode('D').mat()
         cv_file.release()
-        
-        # Create the mask of the map
-        map_corners = get_corner_arucos(self.frame)
-        if ('top_left' in map_corners.keys()) and ('bottom_right' in map_corners.keys()):
-            self.corners = [map_corners['top_left'], map_corners['bottom_right']]        
-        else:
-            print("ERROR: Could not detect map corners")
-            print(map_corners)
+    
     def info(self):
         print("===== MAP INFO =====")
         if self.found_robot:
@@ -62,12 +61,32 @@ class Map:
         else:
             print("OBSTACLES: Not found")
 
+    def flatten_scene(self,frame):
+        inner_corners = np.array([
+            self.map_corners['top_left'],
+            self.map_corners['top_right'],
+            self.map_corners['bottom_right'],
+            self.map_corners['bottom_left']
+        ], dtype="float32")
+        
+        destination_corners = np.array([
+            [0,0],
+            [WIDTH-1,0],
+            [WIDTH-1, HEIGHT-1],
+            [0, HEIGHT-1]
+        ], dtype="float32")
+        
+        M = cv.getPerspectiveTransform(inner_corners,destination_corners)
+        
+        return cv.warpPerspective(frame,M,(WIDTH,HEIGHT))
+    
     def update(self):
         success, self.raw_frame = self.capture.read()
         #self.frame = cv.undistort(self.frame, self.camera_matrix, self.dist_coeffs)
-        
         # Only keep the region inside the 4 aruco codes
-        self.frame = self.raw_frame[self.corners[0][1]:self.corners[1][1], self.corners[0][0]:self.corners[1][0]].copy()
+        self.map_corners = get_corner_arucos(self.raw_frame)
+        if len(self.map_corners)==4:
+            self.frame = self.flatten_scene(self.raw_frame)
         # Reset obstacles
         self.obstacles = []
         if not success:
@@ -76,8 +95,8 @@ class Map:
     def set_frame(self,frame):
         self.frame = frame
     
-    def scan_arucos(self):
-        aruco_markers = get_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
+    def find_robot(self):
+        aruco_markers = get_rt_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
         
         if len(aruco_markers):
             if 1 in aruco_markers.keys():
@@ -117,7 +136,7 @@ class Map:
 
         self.obstacles = [contour for contour in self.obstacles if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
 
-    def draw(self):
+    def show(self):
         # Draw robot
         if self.found_robot:
             cv.drawContours(self.frame, self.robot[2], -1, (255,0,0), LINE_THICKNESS)
@@ -137,7 +156,7 @@ class Map:
             else:
                 print("Error: Wrong DISPLAY_OBSTACLES value !")
             
-        cv.imshow('Masked',self.frame)
+        cv.imshow('Flatten',self.frame)
         cv.imshow('Raw',self.raw_frame)
         
     def visibility_graph():

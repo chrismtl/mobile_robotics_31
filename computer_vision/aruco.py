@@ -4,12 +4,13 @@ from . import geometry as geom
 from .constants import *
 
 # CONSTANTS
-ARUCO_DICTIONARY = cv.aruco.DICT_4X4_50
+ARUCO_DICTIONARY_CORNER = cv.aruco.DICT_4X4_50
+ARUCO_DICTIONARY_RT = cv.aruco.DICT_6X6_1000
 
-def get_arucos(frame, marker_size, camera_matrix, dist_coeffs):
+def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
     
     # Load the ArUco dictionary
-    aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY)
+    aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY_RT)
     aruco_parameters =  cv.aruco.DetectorParameters()
    
     # Detect ArUco markers in the video frame
@@ -52,10 +53,7 @@ def get_arucos(frame, marker_size, camera_matrix, dist_coeffs):
             rotation_matrix = np.eye(4)
             rotation_matrix = cv.Rodrigues(np.array(rvecs[i][0]))[0]
             (rx,ry,rz) = geom.get_rotations_chat(rotation_matrix)
-            aruco_markers[marker_id] = [int(marker_id),
-                                        [center_x,center_y],
-                                        [rx,ry,rz],
-                                        np.round(marker_corner).astype(np.int32)]
+            aruco_markers[marker_id] = [center_x,center_y,rz]
             
             i+=1
             
@@ -64,7 +62,7 @@ def get_arucos(frame, marker_size, camera_matrix, dist_coeffs):
 
 def get_corner_arucos(frame):
     # Load the ArUco dictionary
-    aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY)
+    aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY_CORNER)
     aruco_parameters =  cv.aruco.DetectorParameters()
    
     # Detect ArUco markers in the video frame
@@ -73,32 +71,32 @@ def get_corner_arucos(frame):
     
     cv.aruco.drawDetectedMarkers(frame, corners, ids)
     # Check that all four ArUco markers were detected
-    if len(ids)==4:
-        # Flatten the ArUco IDs list
-        ids = ids.flatten()
-        # Loop over the detected ArUco corners
-        aruco_markers = {}
-        for (marker_corner, marker_id) in zip(corners, ids):
-            # Extract the marker corners
-            (top_left, top_right, bottom_right, bottom_left) = marker_corner.reshape((4, 2))
-            
-            # Convert the (x,y) coordinate pairs to integers
-            top_right = (int(top_right[0]), int(top_right[1]))
-            bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
-            bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
-            top_left = (int(top_left[0]), int(top_left[1]))
-            
-            if top_left[0] < 300 and top_left[1] < 300:
-                aruco_markers['top_left'] = bottom_right
-            if top_left[0] > 300 and top_left[1] < 300:
-                aruco_markers['top_right'] = bottom_right
-            if top_left[0] > 300 and top_left[1] > 300:
-                aruco_markers['bottom_right'] = bottom_right
-            if top_left[0] < 300 and top_left[1] > 300:
-                aruco_markers['bottom_left'] = bottom_right
-
-        return aruco_markers
-    print("Error: could not find the 4 Aruco corners")
+    if ids.any():
+        if (0 in ids) and (1 in ids) and (2 in ids) and (3 in ids):
+            # Flatten the ArUco IDs list
+            ids = ids.flatten()
+            # Loop over the detected ArUco corners
+            aruco_markers = {}
+            for (marker_corner, marker_id) in zip(corners, ids):
+                # Extract the marker corners
+                (top_left, top_right, bottom_right, bottom_left) = marker_corner.reshape((4, 2))
+                
+                # Convert the (x,y) coordinate pairs to integers
+                top_right = (int(top_right[0]), int(top_right[1]))
+                bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+                bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+                top_left = (int(top_left[0]), int(top_left[1]))
+                
+                if marker_id==0:
+                    aruco_markers['top_left'] = bottom_right
+                if marker_id==1:
+                    aruco_markers['bottom_left'] = top_right
+                if marker_id==2:
+                    aruco_markers['bottom_right'] = top_left
+                if marker_id==3:
+                    aruco_markers['top_right'] = bottom_left
+            return aruco_markers
+    if DEBUG: print("ERROR: Could not detect map corners")
     return {}
 
     
