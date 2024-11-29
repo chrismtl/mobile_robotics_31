@@ -181,8 +181,8 @@ class Map:
             cv.line(frame, obstacles_line[0:2], obstacles_line[2:4], (0,0,0), 1)
 
         #Draw target_line
-        #for i in range(1, len(self.target_lines)):
-            #cv.line(frame, self.target_lines[i-1], self.target_lines[i], (43,255,255), 3)    
+        for i in range(1, len(self.target_lines)):
+            cv.line(frame, self.target_lines[i-1], self.target_lines[i], (43,255,255), 3)    
             
         cv.imshow('Flatten',self.frame)
         cv.imshow('Raw',self.raw_frame)

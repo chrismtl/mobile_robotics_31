@@ -64,7 +64,7 @@ def path_functions(shortest_path):
 
 
 # %%
-def a_star_search(start,end,points,ex_path):
+def a_star_search(points,ex_path):
     """
     A* 
 
@@ -83,7 +83,6 @@ def a_star_search(start,end,points,ex_path):
 
     
     # Initialize the open set as a priority queue and add the start node
-    points = np.vstack([start, end, points])
     open_set = []
     start_index = 0
     start = points[0,:]
@@ -331,8 +330,8 @@ def possible_lignes(ex_path, corners):
 
     N = ex_path.shape[0]
     lignes = []
-    for i in range(N-1):
-        for j in range(N-1):
+    for i in range(N):
+        for j in range(N):
             if ex_path[i,j] == 1:
                 lignes.append(np.concatenate((corners[i, :], corners[j, :])))
     
@@ -344,15 +343,15 @@ def possible_lignes(ex_path, corners):
 
 # %% test
 
-obstacles = [
-    [(0, 0), (1, 0), (1, 1), (0, 1)],  
-    [(2, 2), (3, 2), (3, 3), (2, 3)] ,
-]
-start= (0,0)
-end = (4,4)
-matrix,corners = compute_visibility_matrix(start,end,obstacles)
-opt_path = a_star_search(start,end,corners,matrix)
-print(opt_path)
+# obstacles = [
+#     [(0, 0), (1, 0), (1, 1), (0, 1)],  
+#     [(2, 2), (3, 2), (3, 3), (2, 3)] ,
+# ]
+# start= (0,0)
+# end = (4,4)
+# matrix,corners = compute_visibility_matrix(start,end,obstacles)
+# opt_path = a_star_search(start,end,corners,matrix)
+# print(opt_path)
 
 
  
