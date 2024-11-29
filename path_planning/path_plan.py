@@ -172,14 +172,14 @@ def path_direction(coordinates, nodes_slopes, segment_index):
 
     M = nodes_slopes.shape[0]
     speed = np.zeros(2)
-    y_mean = coordinates[0,1]
-    x_mean = coordinates[0,1]
-    theta_mean = -1*coordinates[0,2]
+    y_mean = coordinates[1]
+    x_mean = coordinates[0]
+    theta_mean = -1*coordinates[2]
     #theta_mean = math.radians(theta_mean) #si angle en degres
 
     tolerance_norm = 1
-    Param1 = 100 #depend de l'unité
-    Param2 = 50 
+    Param1 = 1 #depend de l'unité
+    Param2 = 20 
     end = 0
 
     #check if we're close to the end of the segment
@@ -193,13 +193,14 @@ def path_direction(coordinates, nodes_slopes, segment_index):
         if segment_index == (M-1):
             end = 1
             speed[:] = [0,0]
-            return speed,segment_index,end
+            return speed, segment_index, end
 
 
     #find the angle of the slope and set the speed
     angle_err = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
     speed[0] = distance_segm*Param1 + angle_err*Param2
     speed[1] = distance_segm*Param1 - angle_err*Param2
+    return speed, segment_index, end
 
 
 # %%
