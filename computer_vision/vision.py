@@ -72,6 +72,7 @@ class Map:
             self.map_corners['bottom_right'],
             self.map_corners['bottom_left']
         ], dtype="float32")
+
         
         destination_corners = np.array([
             [0,0],
@@ -180,8 +181,8 @@ class Map:
             cv.line(frame, obstacles_line[0], obstacles_line[1], (0,0,0), 1)
 
         #Draw target_line
-        for i in (len(self.target_lines)-1):
-            cv.line(frame, self.target_line[i], self.target_line[i+1], (43,255,255), 3)    
+        for i in range(1, len(self.target_lines)):
+            cv.line(frame, self.target_line[i-1], self.target_line[i], (43,255,255), 3)    
             
         cv.imshow('Flatten',self.frame)
         cv.imshow('Raw',self.raw_frame)

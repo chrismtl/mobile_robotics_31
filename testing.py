@@ -9,12 +9,12 @@ def test_camera():
         if cv.waitKey(20) & 0xFF==ord('d'):
             break
 
-#test_camera()
+test_camera()
 
 map = Map()
 
 while True:
-    map.update()
+    map.show()
     if cv.waitKey(1) != -1:
         map.vision_stop()
         break
