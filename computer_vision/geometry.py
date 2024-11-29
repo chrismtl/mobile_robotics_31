@@ -2,6 +2,7 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from .constants import *
+import cv2 as cv
 
 def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
     # Create a new list
@@ -24,13 +25,57 @@ def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
 
     return clean_corners
 
-def augmented_polygon(corners, scale_factor=SCALE_FACTOR):     
-    center = corners.mean(axis=0)
-    
-    # Translate vertices to origin (center as reference), scale, and translate back
-    scaled_vertices = (corners - center) * scale_factor + center
-    
-    return np.round(scaled_vertices).astype(np.int32)
+def find_intersection(p1, p2, p3, p4):
+    # Line 1: p1 -> p2
+    # Line 2: p3 -> p4
+    A1 = p2[1] - p1[1]
+    B1 = p1[0] - p2[0]
+    C1 = A1 * p1[0] + B1 * p1[1]
+
+    A2 = p4[1] - p3[1]
+    B2 = p3[0] - p4[0]
+    C2 = A2 * p3[0] + B2 * p3[1]
+
+    determinant = A1 * B2 - A2 * B1
+
+    if determinant == 0:
+        return None
+
+    x = (B2 * C1 - B1 * C2) / determinant
+    y = (A1 * C2 - A2 * C1) / determinant
+
+    return np.array([x, y], dtype=np.float32)
+
+def augment_corners(frame, corners):
+    augmented_corners = []
+
+    # Iterate through each pair of consecutive corners
+    for i in range(len(corners)):
+        p1 = corners[i]
+        p2 = corners[(i + 1) % len(corners)]  # Loop back to the start for the last segment
+        p3 = corners[(i + 2) % len(corners)]  # Next segment's starting point
+        
+        # Calculate the first segment's offset
+        segment_vector_1 = p2 - p1
+        perpendicular_vector_1 = np.array([-segment_vector_1[1], segment_vector_1[0]])
+        perpendicular_vector_1 = perpendicular_vector_1 / np.linalg.norm(perpendicular_vector_1)
+        offset_p1 = p1 + perpendicular_vector_1 * ROBOT_RADIUS_PIXEL
+        offset_p2 = p2 + perpendicular_vector_1 * ROBOT_RADIUS_PIXEL
+        
+        # Calculate the second segment's offset
+        segment_vector_2 = p3 - p2
+        perpendicular_vector_2 = np.array([-segment_vector_2[1], segment_vector_2[0]])
+        perpendicular_vector_2 = perpendicular_vector_2 / np.linalg.norm(perpendicular_vector_2)
+        offset_p3 = p2 + perpendicular_vector_2 * ROBOT_RADIUS_PIXEL
+        offset_p4 = p3 + perpendicular_vector_2 * ROBOT_RADIUS_PIXEL
+        
+        # Find the intersection point of the two offset lines
+        intersection = find_intersection(offset_p1, offset_p2, offset_p3, offset_p4)
+        if intersection is not None:
+            augmented_corners.append(intersection)
+
+
+    return np.round(augmented_corners).astype(np.int32)
 
 def euler_from_quaternion(x, y, z, w):
     """

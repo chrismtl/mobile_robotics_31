@@ -98,7 +98,7 @@ def get_corner_arucos(frame):
                 if marker_id==3:
                     aruco_markers['top_right'] = bottom_left
             return aruco_markers
-    if DEBUG: print("ERROR: Could not detect map corners")
+        print(f"Only detected {ids}")
     return {}
 
     

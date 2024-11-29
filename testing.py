@@ -1,5 +1,6 @@
 from computer_vision.vision import *
 
+
 def test_camera():
     capture = cv.VideoCapture(0)
     while True:
@@ -9,15 +10,15 @@ def test_camera():
         if cv.waitKey(20) & 0xFF==ord('d'):
             break
 
-test_camera()
-
-map = Map()
-
-while True:
+def test_augmented_obstacles():
+    map = Map()
+    test_frame  = cv.imread("computer_vision/test_map.png")
+    map.set_frame(test_frame)
+    map.vision_start()
     map.show()
-    if cv.waitKey(1) != -1:
-        map.vision_stop()
-        break
+    cv.waitKey(0)
+    map.vision_stop()
    
-map.info()
-cv.destroyAllWindows()
+
+if __name__ == "__main__":
+    test_camera()
