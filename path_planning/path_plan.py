@@ -236,11 +236,13 @@ def angle_error(x_rob,y_rob, theta_rob, x_fin, y_fin):
 
 # %%
 
-def compute_visibility_matrix(obstacles):
+def compute_visibility_matrix(start,end,obstacles):
     """
     Compute a visibility matrix
 
     input:
+        start point
+        end poitn
         obstacles: List of obstacles, each as a list of extended 
                    corner coordinates [[(x1, y1), ...], ...]
     
@@ -249,13 +251,26 @@ def compute_visibility_matrix(obstacles):
                             and the jth corner, if not  it's equal to 0.
         corners
     """
+    # Convert start and end points to single-point obstacles
+    start_obstacle = [start]
+    end_obstacle = [end]
+
+    # Add start and end points to the obstacles list
+    obstacles = [start_obstacle, end_obstacle] + obstacles
+
     # Flatten the list of obstacles to get all corners
     corners = [corner for obstacle in obstacles for corner in obstacle]
+    corners = np.array(corners)
     N = len(corners)
     matrix = np.ones((N, N), dtype=int)
 
     # Convert obstacles to polygons
-    obstacle_polygons = [Polygon(obs) for obs in obstacles]
+
+    obstacle_polygons = []
+    for obs in obstacles:
+        if len(obs) >= 3:  # A valid polygon requires at least 3 points
+            obstacle_polygons.append(Polygon(obs))
+    obstacle_polygons = np.array(obstacle_polygons)
 
     # Map corners to their respective obstacle indices
     corner_to_obstacle = {}
@@ -304,19 +319,21 @@ def are_adjacent_corners(corner1, corner2, obstacle_corners):
     """
     n = len(obstacle_corners)
     for i in range(n):
-        if (obstacle_corners[i] == corner1 and 
-            (obstacle_corners[(i + 1) % n] == corner2 or obstacle_corners[(i - 1) % n] == corner2)):
+        if (np.array_equal(obstacle_corners[i], corner1) and 
+           (np.array_equal(obstacle_corners[(i + 1) % n], corner2) or 
+           np.array_equal(obstacle_corners[(i - 1) % n], corner2))):
             return True
     return False
 
 # %%
 
 def possible_lignes(ex_path, corners):
+
     N = ex_path.shape[0]
     lignes = []
     for i in range(N-1):
         for j in range(N-1):
-            if ex_path == 1:
+            if ex_path[i,j] == 1:
                 lignes.append(np.concatenate((corners[i, :], corners[j, :])))
     
     lignes = np.array(lignes)
@@ -327,12 +344,15 @@ def possible_lignes(ex_path, corners):
 
 # %% test
 
-# obstacles = [
-#     [(0, 0), (1, 0), (1, 1), (0, 1)],  
-#     [(2, 2), (3, 2), (3, 3), (2, 3)]   
-# ]
-# matrix = compute_visibility_matrix(obstacles)
-# print(matrix)
+obstacles = [
+    [(0, 0), (1, 0), (1, 1), (0, 1)],  
+    [(2, 2), (3, 2), (3, 3), (2, 3)] ,
+]
+start= (0,0)
+end = (4,4)
+matrix,corners = compute_visibility_matrix(start,end,obstacles)
+opt_path = a_star_search(start,end,corners,matrix)
+print(opt_path)
 
 
  
