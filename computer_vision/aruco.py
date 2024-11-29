@@ -1,23 +1,23 @@
 import cv2 as cv
 import numpy as np
+import math
 from . import geometry as geom
 from .constants import *
 
 # CONSTANTS
 ARUCO_DICTIONARY_CORNER = cv.aruco.DICT_4X4_50
-ARUCO_DICTIONARY_RT = cv.aruco.DICT_6X6_1000
 
 def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
     
     # Load the ArUco dictionary
-    aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY_RT)
+    aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY_CORNER)
     aruco_parameters =  cv.aruco.DetectorParameters()
    
     # Detect ArUco markers in the video frame
     (corners, ids, rejected) = cv.aruco.detectMarkers(
         frame, aruco_dictionary, parameters=aruco_parameters)
     # Check that at least one ArUco marker was detected
-    if len(corners) > 0:
+    if ids is not None:
         # Draw a square around detected markers in the video frame
         if CV_DRAW: cv.aruco.drawDetectedMarkers(frame, corners, ids)
         # Get the rotation and translation vectors
@@ -33,7 +33,7 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
         aruco_markers = {}
         for (marker_corner, marker_id) in zip(corners, ids):
             # Draw marker axes
-            if CV_DRAW: cv.drawFrameAxes(frame, camera_matrix, dist_coeffs, rvecs[i], tvecs[i], 0.05)
+            if CV_DRAW: cv.drawFrameAxes(frame, camera_matrix, dist_coeffs, rvecs[i], tvecs[i], 0.04)
             
             # Extract the marker corners
             treated_corners = marker_corner.reshape((4, 2))
@@ -53,11 +53,13 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
             rotation_matrix = np.eye(4)
             rotation_matrix = cv.Rodrigues(np.array(rvecs[i][0]))[0]
             (rx,ry,rz) = geom.get_rotations_chat(rotation_matrix)
-            aruco_markers[marker_id] = [center_x,center_y,rz]
+            aruco_markers[marker_id] = [center_x,center_y,math.radians(rz)]
             
             i+=1
-            
+    
         return aruco_markers
+    else:
+        print("ERROR: Could not detect Thymio and Target")
     return {}
 
 def get_corner_arucos(frame):
@@ -71,7 +73,7 @@ def get_corner_arucos(frame):
     
     cv.aruco.drawDetectedMarkers(frame, corners, ids)
     # Check that all four ArUco markers were detected
-    if ids.any():
+    if ids is not None:
         if (0 in ids) and (1 in ids) and (2 in ids) and (3 in ids):
             # Flatten the ArUco IDs list
             ids = ids.flatten()
