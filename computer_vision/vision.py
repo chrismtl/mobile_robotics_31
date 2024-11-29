@@ -127,7 +127,7 @@ class Map:
     
     def detect_global_obstacles(self):
         # Create local copy of the frame that we will use for treatment
-        frame = self.initial_frame.copy()
+        frame = self.frame.copy()
         # Detect edges
         frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         # Blur the image
@@ -154,7 +154,7 @@ class Map:
         self.obstacles = [contour for contour in self.obstacles if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
 
     def show(self):
-        frame = self.initial_frame.copy()
+        frame = self.frame.copy()
 
         #Draw reference frame
         cv.line(frame, (0,0), (50,0), (0,0,255), 6)

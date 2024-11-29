@@ -38,7 +38,7 @@ def path_functions(shortest_path):
 
     M = shortest_path.shape[0]
     nodes_slopes = np.zeros((M, 5))
-    for i in range(M-1):
+    for i in range(M):
         nodes_slopes[i,0] = shortest_path[i,0]
         nodes_slopes[i,1] = shortest_path[i,1]
         #check if the slope is not vertical
@@ -174,39 +174,39 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     speed = np.zeros(2)
     y_mean = coordinates[1]
     x_mean = coordinates[0]
-    theta_mean = -1*coordinates[2]
+    theta_mean = coordinates[2]
     #theta_mean = math.radians(theta_mean) #si angle en degres
 
-    tolerance_norm = 1
-    Param1 = 1 #depend de l'unité
-    Param2 = 20 
+    tolerance_norm = 40
+    Param1 = 0.5 #depend de l'unité
+    Param2 = 200 
     end = 0
 
     #check if we're close to the end of the segment
     distance_segm = ((nodes_slopes[segment_index+1,1]-y_mean)**2 + (nodes_slopes[segment_index+1,0]-x_mean)**2)**0.5
-    print(f"distance_segm {distance_segm}")
 
     if distance_segm < tolerance_norm:
         #means we're at the end of the segment
         print("arrive fin segment")
+        print(nodes_slopes[segment_index+1,1])
         segment_index += 1
+        print("seg index:",segment_index)
+        print(f"nombre de seg {M-1}")
 
         #check if we're at the final distination
-        if segment_index == (M-1):
-            print("final destination")
-            end = 1
-            speed[:] = [0,0]
-            return speed, segment_index, end
+    if segment_index == (M-1):
+        print("final destination")
+        end = 1
+        speed[:] = [0,0]
+        return speed, segment_index, end
 
 
     #find the angle of the slope and set the speed
-    angle_err,theta_rob,angle_slope = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
-    print(f"theta_rob {theta_rob}") 
-    print(f"angle_slope {angle_slope}")
-    print(f"angle_err {angle_err}")
+    #angle_err,theta_rob,angle_slope = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
+    angle_err,angle_diff = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
     
-    speed[0] = distance_segm*Param1 + angle_err*Param2
-    speed[1] = distance_segm*Param1 - angle_err*Param2
+    speed[0] = distance_segm*Param1 + angle_err*Param2 + 60
+    speed[1] = distance_segm*Param1 - angle_err*Param2 + 60
     return speed, segment_index, end
 
 
@@ -227,16 +227,10 @@ def angle_error(x_rob,y_rob, theta_rob, x_fin, y_fin):
                    of the robot and the slope on which it should be.
     """
 
-    angle_slope = np.arctan2(y_fin-y_rob, x_fin-x_rob)
-    angle_diff = theta_rob - angle_slope
-    if abs(angle_diff) < math.pi:
-        angle_err = angle_diff
-        return angle_err
-    else: 
-        value = 2*math.pi-abs(angle_diff)
-        sign = -1* math.copysign(1,angle_diff)
-        angle_err = sign*value
-        return angle_err,theta_rob,angle_slope
+    angle_slope = np.arctan2((y_fin-y_rob), (x_fin-x_rob))
+    angle_diff = angle_slope - theta_rob
+    angle_err = (angle_diff + np.pi) % (2 * np.pi) - np.pi
+    return angle_err,angle_diff
     
 # err = angle_error(0,0, (-1*math.pi)/2, 0, 1)
 # print(err)
