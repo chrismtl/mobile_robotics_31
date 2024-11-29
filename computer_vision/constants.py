@@ -9,6 +9,8 @@ CAMERA_CALIBRATION_FILE = 'computer_vision\calibration_chessboard.yaml'
 LINE_THICKNESS = 1
 FIRST_FRAME = 30            # First frame to analyse
 MARKER_SIZE_ROBOT = 0.037    # Side length of the ArUco marker in meters 
+FIRST_FRAME = 15            # First frame to analyse
+ROBOT_RADIUS = 200
 
 # Obstacles
 MIN_OBSTACLE_SEGMENT_LENGTH = 10

@@ -1,10 +1,11 @@
 import tdmclient.notebook
+import numpy as np
 from tdmclient import ClientAsync, aw
 #await tdmclient.notebook.start()
 
-def collision_avoidance(nodes_slopes, pose_est, error_est, old_obstacle, segment):
-    speed_turn_left = [-25,50]       #Actuation for turning left
-    speed_turn_right = [50,-25]      #Actuation for turning right
+def collision_avoidance(nodes_slopes, pose_est, error_est = [10,10], old_obstacle, segment, prox):
+    speed_turn_left = [-25,30]       #Actuation for turning left
+    speed_turn_right = [30,-25]      #Actuation for turning right
     actuation = np.zeros(2)
     #obstThrL = 10      # Low threshold for which the robot exits the avoidance obstacle
     obstThrH = 20      # High threshold for which the robot enters the avoidance obstacle
@@ -14,8 +15,8 @@ def collision_avoidance(nodes_slopes, pose_est, error_est, old_obstacle, segment
     path_reached = 0    # 0 = not reached, 1 = reached
     obj_right = 0      # 1 = object detected on the right, 0 = object detected on the left
     
-    await node.wait_for_variables()
-    prox = node['prox.horizontal'] # Lire les valeurs des capteurs de proximité
+    #await node.wait_for_variables()
+    #prox = node['prox.horizontal'] # Lire les valeurs des capteurs de proximité
 
     if old_obstacle == 0:       # The robot is not in the avoidance mode
         for i in range (5):     # Let's find if there is an obstacle in front of the robot

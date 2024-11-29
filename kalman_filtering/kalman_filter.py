@@ -1,4 +1,5 @@
 import numpy as np
+
 T_s = 0.1
 A = np.array([[1, 0, T_s, 0], [0, 1, 0, T_s], [0, 0, 1, 0], [0, 0, 0, 1]])
 B = np.array([[T_s, 0], [0, T_s], [1, 0], [0, 1]])
@@ -14,7 +15,7 @@ Q = np.array([[(T_s**4)/4,          0, (T_s**3)/2,          0],
               [(T_s**3)/2,          0,     T_s**2,          0],
               [         0, (T_s**3)/2,          0,     T_s**2]])
 
-def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, view_blocked):
+def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, view_blocked=False):
     """
     Estimates the current state using input sensor data and the previous state
     
