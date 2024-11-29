@@ -59,7 +59,7 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
     
         return aruco_markers
     else:
-        print("ERROR: Could not detect Thymio and/or target markers")
+        print("ERROR: Could not detect Thymio and Target")
     return {}
 
 def get_corner_arucos(frame):

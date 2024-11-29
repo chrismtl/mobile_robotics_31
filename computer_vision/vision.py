@@ -22,7 +22,10 @@ class Map:
             self.capture.read()
         
         # Define class attributes
-        success, self.raw_frame = self.capture.read()
+        self.capture_success, self.raw_frame = self.capture.read()
+        if not(self.capture_success):
+            print("ERROR: Could not read image from camera")
+            
         self.frame = self.raw_frame.copy()
         self.robot = np.zeros(3)
         self.destination = np.zeros(3)
@@ -35,17 +38,26 @@ class Map:
         # Get aruco in the corners
         self.map_corners = get_corner_arucos(self.frame)
 
+        # Flatten the first frame
         if len(self.map_corners)==4:
-            self.initial_frame = self.flatten_scene(self.raw_frame)
+            self.flatten_scene()
+        else:
+            print("ERROR: Did not detect the four aruco corners")
 
-        self.detect_obstacles()
+        # Detect the global obstacles
+        self.detect_global_obstacles()
         
         # Load the camera parameters from the saved file
-        cv_file = cv.FileStorage(
-            CAMERA_CALIBRATION_FILE, cv.FILE_STORAGE_READ) 
-        self.camera_matrix = cv_file.getNode('K').mat()
-        self.dist_coeffs = cv_file.getNode('D').mat()
-        cv_file.release()
+        try:
+            cv_file = cv.FileStorage(
+                CAMERA_CALIBRATION_FILE, cv.FILE_STORAGE_READ) 
+            self.camera_matrix = cv_file.getNode('K').mat()
+            self.dist_coeffs = cv_file.getNode('D').mat()
+            cv_file.release()
+        except Exception as e:
+            print("ERROR: Could not read camera calibration file")
+            print(f"---\n{e}\n---")
+            self.success = False
     
     def info(self):
         print("===== MAP INFO =====")
@@ -65,7 +77,7 @@ class Map:
         else:
             print("OBSTACLES: Not found")
 
-    def flatten_scene(self,frame):
+    def flatten_scene(self):
         inner_corners = np.array([
             self.map_corners['top_left'],
             self.map_corners['top_right'],
@@ -73,7 +85,6 @@ class Map:
             self.map_corners['bottom_left']
         ], dtype="float32")
 
-        
         destination_corners = np.array([
             [0,0],
             [WIDTH-1,0],
@@ -81,40 +92,40 @@ class Map:
             [0, HEIGHT-1]
         ], dtype="float32")
         
-        M = cv.getPerspectiveTransform(inner_corners,destination_corners)
-        
-        return cv.warpPerspective(frame,M,(WIDTH,HEIGHT))
+        try:
+            M = cv.getPerspectiveTransform(inner_corners,destination_corners)
+            self.frame = cv.warpPerspective(self.raw_frame,M,(WIDTH,HEIGHT))
+        except Exception as e:
+            print("ERROR: warpPerspective")
+            self.success = False
     
     def update(self):
-        success, self.raw_frame = self.capture.read()
-        # Only keep the region inside the 4 aruco codes
-        #self.map_corners = get_corner_arucos(self.raw_frame)
-        if len(self.map_corners)==4:
-            self.frame = self.flatten_scene(self.raw_frame)
-            
-        if not success:
-            print("Warning: Failed to capture new frame")
-        self.find_robot()
-        
+        self.success, self.raw_frame = self.capture.read()
+        if not(self.capture_success):
+            print("ERROR: Could not read image from camera")
+        self.flatten_scene()
+        self.find_thymio_target()
         self.show()
     
     def set_frame(self,frame):
         self.frame = frame
     
-    def find_robot(self):
+    def find_thymio_target(self):
         aruco_markers = get_rt_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
         
         if len(aruco_markers):
             if 4 in aruco_markers.keys():
                 self.robot = aruco_markers[4]
-                #print("Robot found")
                 self.found_robot = True
+            else:
+                print("WARNING: Robot not found")
             if 5 in aruco_markers.keys():
                 self.destination = aruco_markers[5]
-                #print("Destination found")
                 self.found_destination = True
+            else:
+                print("WARNING: Target not found")
     
-    def detect_obstacles(self):
+    def detect_global_obstacles(self):
         # Create local copy of the frame that we will use for treatment
         frame = self.initial_frame.copy()
         # Detect edges
