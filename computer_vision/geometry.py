@@ -25,6 +25,16 @@ def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
 
     return clean_corners
 
+def on_points(corners, points, limits):
+    if len(points)==len(limits):
+        for point,limit in zip(points,limits):
+            dist_to_point = np.linalg.norm(np.array(point)-np.mean(corners,axis=0).astype(int))
+            if dist_to_point<limit:
+                return True
+        return False
+    print("ERROR: Size of points and limits do not match")
+    return False
+
 def find_peak(corners, i):
     # Compute left and right corners
     corner = np.array(corners[i])

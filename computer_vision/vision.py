@@ -161,8 +161,7 @@ class Map:
                 corners = approx_corners.reshape(-1, 2) # Extract the corners
                 corners = geom.remove_close_points(corners) # Remove duplicates
                 corners = geom.augment_corners(corners) # Compute augmented obstacle
-                dist_to_rob = np.linalg.norm(np.array(self.robot[0:2])-np.mean(corners,axis=0).astype(int))
-                if dist_to_rob>MIN_DIST_TO_ROBOT:   # Check if it is not the robot
+                if not on_points(corners, [self.robot[0:2],self.destination[0:2]], [MIN_DIST_TO_ROBOT, MIN_DIST_TO_DESTINATION]):   # Check if it is not the robot or on the destination
                     self.obstacles.append(corners)  # Add the obstacles to our obstacle list
 
     def show(self):
