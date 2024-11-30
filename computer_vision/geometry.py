@@ -2,6 +2,7 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from .constants import *
+import cv2 as cv
 
 def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
     # Create a new list
@@ -24,13 +25,48 @@ def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
 
     return clean_corners
 
-def augmented_polygon(corners, scale_factor=SCALE_FACTOR):     
-    center = corners.mean(axis=0)
+def find_peak(corners, i):
+    # Compute left and right corners
+    corner = np.array(corners[i])
+    left_corner  = np.array(corners[(i-1)%len(corners)])
+    right_corner = np.array(corners[(i+1)%len(corners)])
+    # Compute left and right vectors
+    left_vector = (corner - left_corner)
+    right_vector = (corner - right_corner)
+    # Normalize left and right vectors
+    left_vector = left_vector/np.linalg.norm(left_vector)
+    right_vector = right_vector/np.linalg.norm(right_vector)
+    # Sum them to get the corner vector
+    corner_vector = left_vector + right_vector
+    # Scale the vector to have a norm of ROBOT_RADIUS_PIXEL
+    scaler = ROBOT_RADIUS_PIXEL/np.linalg.norm(corner_vector)
+    corner_vector = scaler*corner_vector
+    # Return the vector added to the corner
+    return corner + corner_vector
     
-    # Translate vertices to origin (center as reference), scale, and translate back
-    scaled_vertices = (corners - center) * scale_factor + center
-    
-    return np.round(scaled_vertices).astype(np.int32)
+def augment_corners(corners):
+    augmented_corners = []
+
+    # Iterate through each pair of consecutive corners
+    for i in range(len(corners)):
+        p1 = corners[i]
+        p2 = corners[(i + 1) % len(corners)]
+        
+        segment_vector = p2 - p1
+        perpendicular_vector = np.array([-segment_vector[1], segment_vector[0]])
+        if np.linalg.norm(perpendicular_vector) < EPSILON: return corners
+        perpendicular_vector = perpendicular_vector / np.linalg.norm(perpendicular_vector)
+        
+        # Calculate offset points
+        offset_peak = find_peak(corners,i)
+        offset_p1 = (p1 + perpendicular_vector * ROBOT_RADIUS_PIXEL).astype(np.int32)
+        offset_p2 = (p2 + perpendicular_vector * ROBOT_RADIUS_PIXEL).astype(np.int32)
+
+        augmented_corners.append(offset_peak)
+        augmented_corners.append(offset_p1)
+        augmented_corners.append(offset_p2)
+
+    return np.round(augmented_corners).astype(np.int32)
 
 def euler_from_quaternion(x, y, z, w):
     """
