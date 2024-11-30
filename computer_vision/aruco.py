@@ -17,7 +17,7 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
     (corners, ids, rejected) = cv.aruco.detectMarkers(
         frame, aruco_dictionary, parameters=aruco_parameters)
     # Check that at least one ArUco marker was detected
-    if ids.any():
+    if ids is not None:
         if (4 in ids) and (5 in ids):
             # Draw a square around detected markers in the video frame
             if CV_DRAW: cv.aruco.drawDetectedMarkers(frame, corners, ids)

@@ -179,7 +179,7 @@ def path_direction(coordinates, nodes_slopes, segment_index):
 
     tolerance_norm = 40
     Param1 = 0.5 #depend de l'unité
-    Param2 = 200 
+    Param2 = 30 
     end = 0
 
     #check if we're close to the end of the segment
