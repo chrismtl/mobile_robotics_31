@@ -115,11 +115,10 @@ class Map:
         
         if setup:
             self.find_corners()
+            if self.found_corners:
+                self.detect_global_obstacles()
             
         self.find_thymio_destination()
-        
-        if setup & self.found_corners:
-            self.detect_global_obstacles()
             
         self.show()
     
@@ -172,20 +171,20 @@ class Map:
             cv.line(frame, (0,0), (50,0), X_AXIS_COLOR, 6)
             cv.line(frame, (0,0), (0,50), Y_AXIS_COLOR, 6)
 
-            # Draw robot's pose
-            if self.found_robot:
-                end_x = int(self.robot[0] + 75 * math.cos(self.robot[2]))
-                end_y = int(self.robot[1] - 75 * -math.sin(self.robot[2]))
-                end_point = (end_x, end_y)
-                cv.arrowedLine(frame, self.robot[0:2], end_point, ROBOT_ARROW_COLOR, D_ARROW_LINE_WIDTH, tipLength=0.2)
-                cv.circle(frame, self.robot[0:2],D_ROBOT_CIRCLE_RADIUS,ROBOT_COLOR,-1)
-
-            # Draw robot's estimated pose
-            end_x_est = int(self.pose_est[0] + 75 * math.cos(self.pose_est[2]))
-            end_y_est = int(self.pose_est[1] - 75 * -math.sin(self.pose_est[2]))
-            end_point_est = (end_x_est, end_y_est)
-            cv.circle(frame, self.pose_est[0:2],6,(255,0,0),-1)
-            cv.arrowedLine(frame, self.pose_est[0:2], end_point_est, (138,43,226), D_ARROW_LINE_WIDTH, tipLength=0.2)
+            # Draw robot
+            robot_x = self.robot[0]
+            robot_y = self.robot[1]
+            robot_angle = self.robot[2]
+            if not self.found_robot:
+                robot_x = self.pose_est[0]
+                robot_y = self.pose_est[1]
+                robot_angle = self.pose_est[2]
+            
+            end_x = int(robot_x + 75 * math.cos(robot_angle))
+            end_y = int(robot_y - 75 * -math.sin(robot_angle))
+            end_point = (end_x, end_y)
+            cv.arrowedLine(frame, self.robot[0:2], end_point, ROBOT_ARROW_COLOR, D_ARROW_LINE_WIDTH, tipLength=0.2)
+            cv.circle(frame, self.robot[0:2],D_ROBOT_CIRCLE_RADIUS,ROBOT_COLOR,-1)                
             
             # Draw destination
             if self.found_destination:
@@ -210,7 +209,7 @@ class Map:
 
             #Draw shortest path
             for i in range(1, len(self.target_lines)):
-                cv.line(frame, self.target_lines[i-1], self.target_lines[i], PATH_COLOR, 3)    
+                cv.line(frame, self.target_lines[i-1], self.target_lines[i], PATH_COLOR, 3)
             
         cv.imshow('Vision', frame)
     
