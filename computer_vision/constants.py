@@ -1,5 +1,5 @@
 # FILES
-CAMERA_CALIBRATION_FILE = 'computer_vision\calibration_chessboard.yaml'
+CAMERA_CALIBRATION_FILE = 'computer_vision\\calibration_chessboard.yaml'
 
 # ARUCO TAGS
 AT_TOP_LEFT     = 0
@@ -52,9 +52,11 @@ MIN_DIST_TO_ROBOT = MIN_SECURITY*ROBOT_RADIUS_PIXEL
 MIN_DIST_TO_DESTINATION = MIN_SECURITY*TARGET_RADIUS_PIXEL
 
 # DEBUGS
-CV_DRAW = False
-P_VISION = True
+DEBUG = True
+CV_DRAW = DEBUG
+P_VISION = DEBUG
 P_SETUP = "=====[   SETUP      ]==============="
 P_START = "=====[   START      ]==============="
+P_STOP  = "=====[   STOP       ]==============="
 P_INFO  = "=====[   MAP INFO   ]==============="
 P_END   = "====================================\n"
