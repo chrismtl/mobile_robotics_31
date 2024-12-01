@@ -85,7 +85,7 @@ class Map:
             self.found_corners = False
             self.frame = self.raw_frame.copy()
             if P_VISION:
-                print(f"ERROR: Could not detect the four aruco corners: only detected {self.map_corners['ids']}")
+                print(f"WARNING: Detected aruco corners \n{self.map_corners['ids']}")
 
     def flatten_scene(self):
         inner_corners = np.array([
@@ -109,32 +109,31 @@ class Map:
             if P_VISION: print("ERROR: warpPerspective")
             self.success = False
     
-    def pre_update(self):
+    def update(self, setup=False):
         self.snap()
-        self.find_corners()
+        
+        if setup:
+            self.find_corners()
+            
         self.find_thymio_destination()
-        if self.found_corners:
+        
+        if setup & self.found_corners:
             self.detect_global_obstacles()
-        self.show()
-    
-    def update(self):
-        self.snap()
-        self.find_thymio_destination()
+            
         self.show()
     
     def find_thymio_destination(self):
         aruco_markers = get_rt_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
-        if len(aruco_markers):
-            if AT_ROBOT in aruco_markers.keys():
-                self.robot = aruco_markers[4]
-                self.found_robot = True
-            elif P_VISION:
-                print("WARNING: Robot not found")
-            if AT_DESTINATION in aruco_markers.keys():
-                self.destination = aruco_markers[5]
-                self.found_destination = True
-            elif P_VISION:
-                print("WARNING: Destination not found")
+        if aruco_markers[AT_ROBOT] is not None:
+            self.robot = aruco_markers[4]
+            self.found_robot = True
+        elif P_VISION:
+            print("WARNING: Robot not found")
+        if aruco_markers[AT_DESTINATION] is not None:
+            self.destination = aruco_markers[5]
+            self.found_destination = True
+        elif P_VISION:
+            print("WARNING: Destination not found")
     
     def detect_global_obstacles(self):
         # Clear previous obstacles
@@ -219,7 +218,7 @@ class Map:
         return self.found_corners
 
     def vision_stop(self):
-        if P_VISION: print("=====[     STOP     ]=====")
+        if P_VISION: print(P_STOP)
         self.capture.release()
         cv.destroyAllWindows()
     
