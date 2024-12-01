@@ -10,10 +10,7 @@ q_px = 0.1
 q_py = 0.1
 q_vx = 0.1
 q_vy = 0.1
-Q = np.array([[(T_s**4)/4,          0, (T_s**3)/2,          0],
-              [         0, (T_s**4)/4,          0, (T_s**3)/2],
-              [(T_s**3)/2,          0,     T_s**2,          0],
-              [         0, (T_s**3)/2,          0,     T_s**2]])
+Q = np.diag([q_px, q_py, q_vx, q_vy])
 
 def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, view_blocked=False):
     """

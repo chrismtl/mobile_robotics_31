@@ -27,4 +27,6 @@ def test_pre_update():
             break
 
 if __name__ == "__main__":
-    test_onimage()
+    #test_onimage()
+    test_camera()
+    #test_pre_update()

@@ -243,7 +243,7 @@ def compute_visibility_matrix(start,end,obstacles):
 
     input:
         start point
-        end poitn
+        end point
         obstacles: List of obstacles, each as a list of extended 
                    corner coordinates [[(x1, y1), ...], ...]
     
