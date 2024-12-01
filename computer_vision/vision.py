@@ -128,13 +128,14 @@ class Map:
         if aruco_markers[AT_ROBOT] is not None:
             self.robot = aruco_markers[4]
             self.found_robot = True
-        elif P_VISION:
-            print("WARNING: Robot not found")
+        else:
+            if P_VISION: print("WARNING: Robot not found")
+            self.found_robot = False
+        
         if aruco_markers[AT_DESTINATION] is not None:
             self.destination = aruco_markers[5]
             self.found_destination = True
-        elif P_VISION:
-            print("WARNING: Destination not found")
+        elif P_VISION: print("WARNING: Destination not found")
     
     def detect_global_obstacles(self):
         # Clear previous obstacles
