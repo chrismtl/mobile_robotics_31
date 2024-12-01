@@ -179,6 +179,13 @@ class Map:
                 end_point = (end_x, end_y)
                 cv.arrowedLine(frame, self.robot[0:2], end_point, ROBOT_ARROW_COLOR, D_ARROW_LINE_WIDTH, tipLength=0.2)
                 cv.circle(frame, self.robot[0:2],D_ROBOT_CIRCLE_RADIUS,ROBOT_COLOR,-1)
+
+            # Draw robot's estimated pose
+            end_x_est = int(self.pose_est[0] + 75 * math.cos(self.pose_est[2]))
+            end_y_est = int(self.pose_est[1] - 75 * -math.sin(self.pose_est[2]))
+            end_point_est = (end_x_est, end_y_est)
+            cv.circle(frame, self.pose_est[0:2],6,(255,0,0),-1)
+            cv.arrowedLine(frame, self.pose_est[0:2], end_point_est, (138,43,226), D_ARROW_LINE_WIDTH, tipLength=0.2)
             
             # Draw destination
             if self.found_destination:

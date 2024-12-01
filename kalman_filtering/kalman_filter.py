@@ -8,11 +8,11 @@ C = np.eye(4)
 # Covariance matrices
 q_px = 0.1
 q_py = 0.1
-q_vx = 0.1
-q_vy = 0.1
+q_vx = 0.0008
+q_vy = 0.0008
 Q = np.diag([q_px, q_py, q_vx, q_vy])
 
-def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, view_blocked=False):
+def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     """
     Estimates the current state using input sensor data and the previous state
     
@@ -42,7 +42,7 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, view_blocked=False)
     # measurement prediction covariance
     r_vx = 22.6 
     r_vy = 22.6
-    if view_blocked: # measurement for the position isn't reliable
+    if not robot_found: # measurement for the position isn't reliable
         r_px = 10000000 
         r_py = 10000000
     else:
