@@ -36,6 +36,7 @@ class Map:
         self.obstacles = []
         self.obstacles_lines = []
         self.target_lines = []
+        self.pose_est = np.zeros(3)
         
         # Load the camera parameters from the saved file
         try:
