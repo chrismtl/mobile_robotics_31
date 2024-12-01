@@ -6,10 +6,10 @@ B = np.array([[T_s, 0], [0, T_s], [1, 0], [0, 1]])
 C = np.eye(4)
 
 # Covariance matrices
-q_px = 0.1
-q_py = 0.1
-q_vx = 0.0008
-q_vy = 0.0008
+q_px = 1000000000
+q_py = 1000000000
+q_vx = 0.0008 #measured
+q_vy = 0.0008 #measured
 Q = np.diag([q_px, q_py, q_vx, q_vy])
 
 def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
@@ -40,14 +40,14 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     i = y - np.dot(C, mu_predict)
     
     # measurement prediction covariance
-    r_vx = 22.6 
-    r_vy = 22.6
+    r_vx = 22.6 #measured
+    r_vy = 22.6 #measured
     if not robot_found: # measurement for the position isn't reliable
         r_px = 10000000 
         r_py = 10000000
     else:
-        r_px = 0.1
-        r_py = 0.004
+        r_px = 0.1 #measured
+        r_py = 0.004 #measured
     R = np.diag([r_px, r_py, r_vx, r_vy])
     S = np.dot(C, np.dot(cov_predict, C.T)) + R
              
@@ -57,5 +57,6 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     # a posteriori estimate
     mu_est = mu_predict + np.dot(K,i)
     cov_est = cov_predict - np.dot(K,np.dot(C, cov_predict))
+    print(mu_est)
      
     return mu_est, cov_est
