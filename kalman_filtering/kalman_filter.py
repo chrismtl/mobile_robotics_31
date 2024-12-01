@@ -40,14 +40,14 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, view_blocked=False)
     i = y - np.dot(C, mu_predict)
     
     # measurement prediction covariance
-    r_vx = 0.1
-    r_vy = 0.1
+    r_vx = 22.6 
+    r_vy = 22.6
     if view_blocked: # measurement for the position isn't reliable
         r_px = 10000000 
         r_py = 10000000
     else:
         r_px = 0.1
-        r_py = 0.1
+        r_py = 0.004
     R = np.diag([r_px, r_py, r_vx, r_vy])
     S = np.dot(C, np.dot(cov_predict, C.T)) + R
              
