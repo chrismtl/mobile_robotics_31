@@ -124,6 +124,8 @@ class Map:
     
     def find_thymio_destination(self):
         aruco_markers = get_rt_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
+        if DEBUG:
+            print()
         if aruco_markers[AT_ROBOT] is not None:
             self.robot = aruco_markers[4]
             self.found_robot = True
@@ -134,7 +136,8 @@ class Map:
         if aruco_markers[AT_DESTINATION] is not None:
             self.destination = aruco_markers[5]
             self.found_destination = True
-        elif P_VISION: print("WARNING: Destination not found")
+        elif P_VISION:
+            print("WARNING: Destination not found")
     
     def detect_global_obstacles(self):
         # Clear previous obstacles
@@ -195,10 +198,10 @@ class Map:
             cv.arrowedLine(frame, self.pose_est[0:2].astype(int), end_point_est, (138,43,226), D_ARROW_LINE_WIDTH, tipLength=0.2)               
             
             # Draw destination
-            if self.found_destination:
-                tl,tr,br,bl = self.destination[2]
-                cv.line(frame, tl, br, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
-                cv.line(frame, tr, bl, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
+
+            tl,tr,br,bl = self.destination[2]
+            cv.line(frame, tl, br, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
+            cv.line(frame, tr, bl, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
             
             # Draw obstacle
             for obstacle in self.obstacles:
