@@ -201,9 +201,10 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     #find the angle of the slope and set the speed
     angle_err,angle_diff = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
 
-    if angle_err > angle_tolerance:
+    if abs(angle_err) > angle_tolerance:
         speed[0] = angle_err*Param2
-        speed[1] = -speed[0]
+        speed[1] = -1*angle_err*Param2
+
     else:    
         speed[0] = distance_segm*Param1 + angle_err*Param2 + Param3
         speed[1] = distance_segm*Param1 - angle_err*Param2 + Param3

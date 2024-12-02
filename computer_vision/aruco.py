@@ -59,18 +59,12 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
             rotation_matrix = cv.Rodrigues(np.array(rvecs[i][0]))[0]
             (rx,ry,rz) = geom.get_rotations_chat(rotation_matrix)
             
-            if marker_id==4:
+            if marker_id==AT_ROBOT:
                 center_4 = [center_x,center_y,math.radians(rz)]
-            if marker_id==5:
+            if marker_id==AT_DESTINATION:
                 center_5 = [center_x,center_y,treated_corners]
             
             i+=1
-    
-        if P_VISION:
-            if not AT_ROBOT in ids: print("WARNING: Je trouve pas le Thymio")
-            if not AT_DESTINATION in ids: print("WARNING: Je trouve pas la destination")
-            
-    elif P_VISION: print("WARNING: Je trouve pas le Thymio et la Destination")
         
     return {4:center_4,
             5:center_5}

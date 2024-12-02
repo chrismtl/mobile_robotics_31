@@ -22,13 +22,11 @@ class Map:
             self.capture.read()
         
         # Define class attributes
-        self.capture_success, self.raw_frame = self.capture.read()
-        if not(self.capture_success) and P_VISION:
-            print("ERROR: Could not read image from camera")
-            
-        self.frame = self.raw_frame.copy()
-        self.robot = np.zeros(3)
-        self.destination = np.zeros(3)
+        self.success = True
+        self.raw_frame = None
+        self.frame = None
+        self.robot = 3*[None]
+        self.destination = 3*[None]
         self.map_corners = {}
         self.found_corners = False
         self.found_robot = False
@@ -36,7 +34,7 @@ class Map:
         self.obstacles = []
         self.obstacles_lines = []
         self.target_lines = []
-        self.pose_est = np.zeros((3,), dtype=int)
+        self.pose_est = 3*[None]
         
         # Load the camera parameters from the saved file
         try:
@@ -69,7 +67,7 @@ class Map:
     
     def snap(self):
         self.success, self.raw_frame = self.capture.read()
-        if not(self.capture_success) and P_VISION:
+        if not(self.success) and P_VISION:
             print("ERROR: Could not read image from camera")
         if self.found_corners:
             self.flatten_scene()
@@ -112,28 +110,30 @@ class Map:
     
     def update(self, setup=False):
         self.snap()
-        
+
         if setup:
             self.find_corners()
             if self.found_corners:
+                self.find_thymio_destination()
+                self.pose_est = self.robot.copy()
                 self.detect_global_obstacles()
-            
-        self.find_thymio_destination()
-            
+        else:
+            self.find_thymio_destination()
+
         self.show()
     
     def find_thymio_destination(self):
         aruco_markers = get_rt_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
         
         if not None in aruco_markers[AT_ROBOT]:
-            self.robot = aruco_markers[4]
+            self.robot = aruco_markers[AT_ROBOT]
             self.found_robot = True
         else:
             if P_VISION: print("WARNING: Robot not found")
             self.found_robot = False
         
         if not None in aruco_markers[AT_DESTINATION]:
-            self.destination = aruco_markers[5]
+            self.destination = aruco_markers[AT_DESTINATION]
             self.found_destination = True
         elif P_VISION:
             print("WARNING: Destination not found")
@@ -181,11 +181,11 @@ class Map:
                 robot_x = self.pose_est[0]
                 robot_y = self.pose_est[1]
                 robot_angle = self.pose_est[2]
-            
+             
             end_x = int(robot_x + 75 * math.cos(robot_angle))
             end_y = int(robot_y - 75 * -math.sin(robot_angle))
             end_point = (end_x, end_y)
-            cv.arrowedLine(frame, self.robot[0:2], end_point, ROBOT_ARROW_COLOR, D_ARROW_LINE_WIDTH, tipLength=0.2)
+            cv.arrowedLine(frame, (int(self.robot[0]),int(self.robot[1])), end_point, ROBOT_ARROW_COLOR, D_ARROW_LINE_WIDTH, tipLength=0.2)
             cv.circle(frame, self.robot[0:2],D_ROBOT_CIRCLE_RADIUS,ROBOT_COLOR,-1)
 
             # Draw robot's estimated pose
@@ -193,13 +193,14 @@ class Map:
             end_y_est = int(self.pose_est[1] - 75 * -math.sin(self.pose_est[2]))
             end_point_est = (end_x_est, end_y_est)
             
-            cv.circle(frame, self.pose_est[0:2].astype(int),D_ROBOT_CIRCLE_RADIUS,(255,0,0),-1)
-            cv.arrowedLine(frame, self.pose_est[0:2].astype(int), end_point_est, (138,43,226), D_ARROW_LINE_WIDTH, tipLength=0.2)               
+            cv.circle(frame, (self.pose_est[0],self.pose_est[1]),D_ROBOT_CIRCLE_RADIUS,(255,0,0),-1)
+            cv.arrowedLine(frame, (self.pose_est[0],self.pose_est[1]), end_point_est, (138,43,226), D_ARROW_LINE_WIDTH, tipLength=0.2)               
             
             # Draw destination
-            tl,tr,br,bl = self.destination[2]
-            cv.line(frame, tl, br, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
-            cv.line(frame, tr, bl, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
+            if self.found_destination:
+                tl,tr,br,bl = self.destination[2]
+                cv.line(frame, tl, br, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
+                cv.line(frame, tr, bl, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
             
             # Draw obstacle
             for obstacle in self.obstacles:
@@ -230,9 +231,6 @@ class Map:
     
     def get_obstacles(self):
         return self.obstacles
-    
-    def get_found_corners(self):
-        return self.found_corners
 
     def vision_stop(self):
         if P_VISION: print(P_STOP)
