@@ -124,16 +124,15 @@ class Map:
     
     def find_thymio_destination(self):
         aruco_markers = get_rt_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
-        if DEBUG:
-            print()
-        if aruco_markers[AT_ROBOT] is not None:
+        
+        if not None in aruco_markers[AT_ROBOT]:
             self.robot = aruco_markers[4]
             self.found_robot = True
         else:
             if P_VISION: print("WARNING: Robot not found")
             self.found_robot = False
         
-        if aruco_markers[AT_DESTINATION] is not None:
+        if not None in aruco_markers[AT_DESTINATION]:
             self.destination = aruco_markers[5]
             self.found_destination = True
         elif P_VISION:
@@ -193,12 +192,11 @@ class Map:
             end_x_est = int(self.pose_est[0] + 75 * math.cos(self.pose_est[2]))
             end_y_est = int(self.pose_est[1] - 75 * -math.sin(self.pose_est[2]))
             end_point_est = (end_x_est, end_y_est)
-            print(self.pose_est[0:2])
+            
             cv.circle(frame, self.pose_est[0:2].astype(int),D_ROBOT_CIRCLE_RADIUS,(255,0,0),-1)
             cv.arrowedLine(frame, self.pose_est[0:2].astype(int), end_point_est, (138,43,226), D_ARROW_LINE_WIDTH, tipLength=0.2)               
             
             # Draw destination
-
             tl,tr,br,bl = self.destination[2]
             cv.line(frame, tl, br, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
             cv.line(frame, tr, bl, DESTINATION_COLOR, DESTINATION_CROSS_WIDTH)
