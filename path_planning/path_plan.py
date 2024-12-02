@@ -178,8 +178,10 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     #theta_mean = math.radians(theta_mean) #si angle en degres
 
     tolerance_norm = 40
+    angle_tolerance = 0.17 # is almost equal 10°
     Param1 = 0.5 #depend de l'unité
-    Param2 = 30 
+    Param2 = 100 
+    Param3 = 50
     end = 0
 
     #check if we're close to the end of the segment
@@ -187,26 +189,25 @@ def path_direction(coordinates, nodes_slopes, segment_index):
 
     if distance_segm < tolerance_norm:
         #means we're at the end of the segment
-        print("arrive fin segment")
-        print(nodes_slopes[segment_index+1,1])
         segment_index += 1
-        print("seg index:",segment_index)
-        print(f"nombre de seg {M-1}")
 
         #check if we're at the final distination
     if segment_index == (M-1):
-        print("final destination")
         end = 1
         speed[:] = [0,0]
         return speed, segment_index, end
 
 
     #find the angle of the slope and set the speed
-    #angle_err,theta_rob,angle_slope = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
     angle_err,angle_diff = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
-    
-    speed[0] = distance_segm*Param1 + angle_err*Param2 + 60
-    speed[1] = distance_segm*Param1 - angle_err*Param2 + 60
+
+    if angle_err > angle_tolerance:
+        speed[0] = angle_err*Param2
+        speed[1] = -speed[0]
+    else:    
+        speed[0] = distance_segm*Param1 + angle_err*Param2 + Param3
+        speed[1] = distance_segm*Param1 - angle_err*Param2 + Param3
+
     return speed, segment_index, end
 
 
