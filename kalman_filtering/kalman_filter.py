@@ -6,10 +6,10 @@ B = np.array([[T_s, 0], [0, T_s], [1, 0], [0, 1]])
 C = np.eye(4)
 
 # Covariance matrices
-q_px = 1000000000
-q_py = 1000000000
-q_vx = 0.0008 #measured
-q_vy = 0.0008 #measured
+q_px = 0.1
+q_py = 0.1
+q_vx = 0.1 #0.0008 #measured
+q_vy = 0.1 #0.0008 #measured
 Q = np.diag([q_px, q_py, q_vx, q_vy])
 
 def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
