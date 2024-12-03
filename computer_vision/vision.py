@@ -110,13 +110,12 @@ class Map:
     
     def update(self, setup=False):
         self.snap()
-
         if setup:
             self.find_corners()
             if self.found_corners:
                 self.find_thymio_destination()
                 self.pose_est = self.robot.copy()
-                self.detect_global_obstacles()
+                self.detect_global_obstacles([self.found_robot,self.found_destination])
         else:
             self.find_thymio_destination()
 
@@ -138,7 +137,7 @@ class Map:
         elif P_VISION:
             print("WARNING: Destination not found")
     
-    def detect_global_obstacles(self):
+    def detect_global_obstacles(self, detected_list):
         # Clear previous obstacles
         self.obstacles = []
         # Create local copy of the frame that we will use for treatment
@@ -163,7 +162,11 @@ class Map:
                 corners = approx_corners.reshape(-1, 2) # Extract the corners
                 corners = geom.remove_close_points(corners) # Remove duplicates
                 corners = geom.augment_corners(corners) # Compute augmented obstacle
-                if not on_points(corners, [self.robot[0:2],self.destination[0:2]], [MIN_DIST_TO_ROBOT, MIN_DIST_TO_DESTINATION]):   # Check if it is not the robot or on the destination
+                valid_obstacle = not on_points(corners,
+                                               detected_list,
+                                               [self.robot[0:2],self.destination[0:2]],
+                                               [MIN_DIST_TO_ROBOT, MIN_DIST_TO_DESTINATION])
+                if valid_obstacle:   # Check if it is not the robot or on the destination
                     self.obstacles.append(corners)  # Add the obstacles to our obstacle list
 
     def show(self):
@@ -193,8 +196,8 @@ class Map:
             end_y_est = int(self.pose_est[1] - 75 * -math.sin(self.pose_est[2]))
             end_point_est = (end_x_est, end_y_est)
             
-            cv.circle(frame, (self.pose_est[0],self.pose_est[1]),D_ROBOT_CIRCLE_RADIUS,(255,0,0),-1)
-            cv.arrowedLine(frame, (self.pose_est[0],self.pose_est[1]), end_point_est, (138,43,226), D_ARROW_LINE_WIDTH, tipLength=0.2)               
+            cv.circle(frame, (int(self.pose_est[0]),int(self.pose_est[1])),D_ROBOT_CIRCLE_RADIUS,(255,0,0),-1)
+            cv.arrowedLine(frame, (int(self.pose_est[0]),int(self.pose_est[1])), end_point_est, (138,43,226), D_ARROW_LINE_WIDTH, tipLength=0.2)               
             
             # Draw destination
             if self.found_destination:

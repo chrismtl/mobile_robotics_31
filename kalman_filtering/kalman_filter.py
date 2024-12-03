@@ -61,6 +61,6 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     # Next state estimate and covariance
     mu_est = mu_predict + np.dot(K,i)
     cov_est = cov_predict - np.dot(K,np.dot(C, cov_predict))
-    print(mu_est)
+    #print(mu_est)
      
     return mu_est, cov_est

@@ -44,7 +44,7 @@ PATH_COLOR          = (43,255,255)
 
 # OBSTACLES
 MIN_OBSTACLE_SEGMENT_LENGTH = 10
-MIN_AREA = 1000
+MIN_AREA = 500
 MAX_AREA = 180000
 DISPLAY_OBSTACLES = "POINTS"
 MIN_SECURITY = 2.3
@@ -54,7 +54,7 @@ MIN_DIST_TO_DESTINATION = MIN_SECURITY*TARGET_RADIUS_PIXEL
 # DEBUGS
 DEBUG = True
 CV_DRAW = False
-P_VISION = False
+P_VISION = True
 P_SETUP = "=====[   SETUP      ]==============="
 P_START = "=====[   START      ]==============="
 P_STOP  = "=====[   STOP       ]==============="
