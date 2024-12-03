@@ -12,36 +12,40 @@ q_vx = 0.1 #0.0008 #measured
 q_vy = 0.1 #0.0008 #measured
 Q = np.diag([q_px, q_py, q_vx, q_vy])
 
+cov_thymio_vx = 22.6
+cov_thymio_vy = 22.6
+speed_coeff = 0.04 #conversion factor to get thymio's speed in cm/s
+px_conv_x = 6.58 #px/cm
+px_conv_y = 7.68 #px/cm
+
 def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     """
-    Estimates the current state using input sensor data and the previous state
+    Estimates the current state of the robot using input odometry and camera data and the previous state
     
-    param speed: measured speed (Thymio units)
-    param ground_prev: previous value of measured ground sensor
-    param ground: measured ground sensor
-    param pos_last_trans: position of the last transition detected by the ground sensor
-    param x_est_prev: previous state a posteriori estimation
-    param P_est_prev: previous state a posteriori covariance
+    param y: state measurements
+    param u_old: previous speed sent to the motors
+    param mu_predict_old: previous state estimation
+    param cov_predict_old: previous state covariance
+    param robot_found: indicator to check if the view is blocked
     
-    return pos_last_trans: updated if a transition has been detected
-    return x_est: new a posteriori state estimation
-    return P_est: new a posteriori state covariance
+    return mu_est: next state estimation
+    return cov_est: next state covariance
+
+    note: strongly inspired from the Kalman filer algorithm provided in the solutions of the exercises session 7
     """
     
-    ## Prediciton through the a priori estimate
-    # estimated mean of the state
+    # Predicition through the a previous state estimate
     mu_predict = np.dot(A, mu_predict_old) + np.dot(B, u_old)
     
-    # Estimated covariance of the state
+    # Estimated covariance of the state from the previous state covariance
     cov_predict = np.dot(A, np.dot(cov_predict_old, A.T)) + Q
-    # cov_est_a_priori = cov_est_a_priori + Q if type(Q) != type(None) else P_est_a_priori
 
-    # innovation / measurement residual
+    # Innovation parameter
     i = y - np.dot(C, mu_predict)
     
-    # measurement prediction covariance
-    r_vx = 22.6 #measured
-    r_vy = 22.6 #measured
+    # Prediction of the measurement covariance
+    r_vx = cov_thymio_vx * speed_coeff**2 * px_conv_x**2
+    r_vy = cov_thymio_vy * speed_coeff**2 * px_conv_y**2
     if not robot_found: # measurement for the position isn't reliable
         r_px = 10000000 
         r_py = 10000000
@@ -51,10 +55,10 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     R = np.diag([r_px, r_py, r_vx, r_vy])
     S = np.dot(C, np.dot(cov_predict, C.T)) + R
              
-    # Kalman gain (tells how much the predictions should be corrected based on the measurements)
+    # Kalman gain
     K = np.dot(cov_predict, np.dot(C.T, np.linalg.inv(S)))
     
-    # a posteriori estimate
+    # Next state estimate and covariance
     mu_est = mu_predict + np.dot(K,i)
     cov_est = cov_predict - np.dot(K,np.dot(C, cov_predict))
     print(mu_est)
