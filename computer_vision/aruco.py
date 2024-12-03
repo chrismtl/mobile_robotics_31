@@ -103,7 +103,9 @@ def get_corner_arucos(frame):
                     aruco_markers['bottom_right'] = top_left
                 if marker_id==AT_TOP_RIGHT:
                     aruco_markers['top_right'] = bottom_left
+            aruco_markers['valid'] = True
             return aruco_markers
-    return {"ids":ids}
+    return {'valid':False,
+            'ids':ids}
 
     

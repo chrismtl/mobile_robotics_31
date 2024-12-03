@@ -77,7 +77,7 @@ class Map:
         self.map_corners = get_corner_arucos(self.raw_frame)
 
         # Check if it found the 4 corners
-        if len(self.map_corners)==4:
+        if self.map_corners["valid"]:
             self.found_corners = True
             self.flatten_scene()
         else:

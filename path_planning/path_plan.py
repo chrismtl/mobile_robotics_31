@@ -177,7 +177,7 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     theta_mean = coordinates[2]
     #theta_mean = math.radians(theta_mean) #si angle en degres
 
-    tolerance_norm = 40
+    tolerance_norm = 25
     angle_tolerance = 0.17 # is almost equal 10°
     Param1 = 0.5 #depend de l'unité
     Param2 = 200 
