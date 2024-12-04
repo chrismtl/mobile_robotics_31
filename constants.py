@@ -1,3 +1,6 @@
+"""
+Dynamical Constant file containing every chosen constants for our project.
+"""
 # FILES
 CAMERA_CALIBRATION_FILE = 'computer_vision\\calibration_chessboard.yaml'
 
@@ -14,7 +17,7 @@ EPSILON = 5
 LINE_THICKNESS = 1
 FIRST_FRAME = 100            # First frame to analyse
 MARKER_SIZE_ROBOT = 0.037    # Side length of the ArUco marker in meters 
-FIRST_FRAME = 15            # First frame to analyse
+FIRST_FRAME = 15             # First frame to analyse
 ROBOT_RADIUS = 200
 
 # METRICS
