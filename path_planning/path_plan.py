@@ -183,7 +183,7 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     Param3 = 150
     end = 0
 
-    #check if we're at the final distination
+    #check if we're already at the final distination
     if segment_index == (M-1):
         end = 1
         speed[:] = [0,0]
@@ -197,7 +197,7 @@ def path_direction(coordinates, nodes_slopes, segment_index):
         #means we're at the end of the segment
         segment_index += 1
 
-    #check if we're at the final distination
+    #check if we've reached the final distination
     if segment_index == (M-1):
         end = 1
         speed[:] = [0,0]
