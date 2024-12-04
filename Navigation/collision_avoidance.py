@@ -5,6 +5,24 @@ from thymio.control import motors
 #await tdmclient.notebook.start()
 
 def object_detection(prox, avoidance_mode, obstacle, obj_right, obstacle_pos, pos):
+    '''
+    This function checks if there is an obstacle in front of the robot.
+    If there is one, it returns the position of the obstacle and the side of the obstacle.
+
+    inputs:
+            prox: the proximity sensors' values
+            avoidance_mode: 0 if the robot is not avoiding an obstacle, 1 if it is
+            obstacle: 0 if there is no obstacle, 1 if there is one
+            obj_right: 1 if the obstacle is on the right, 0 if it is on the left
+            obstacle_pos: the position of the start of the obstacle
+            pos: the robot's position
+
+    outputs:
+            avoidance_mode: 0 if the robot is not avoiding an obstacle, 1 if it is
+            obstacle: 0 if there is no obstacle, 1 if there is one
+            obj_right: 1 if the obstacle is on the right, 0 if it is on the left
+            obstacle_pos: the position of the start of the obstacle
+    '''
     obstThrH = 20           # High threshold for which the robot enters the avoidance obstacle
     
     for i in range (5):     # find if the obstacle is on the left or on the right
@@ -76,6 +94,20 @@ def segment_check(path, pos, avoidance_mode, segment_index, obstacle, obstacle_p
 
 
 def actuation_robot(prox, avoidance_mode, obj_right, obstacle, actuation):
+    '''
+    This function returns the actuation commands to control the wheels' motors
+    in order to avoid the obstacle.
+
+    inputs: 
+            prox: the proximity sensors' values
+            avoidance_mode: 0 if the robot is not avoiding an obstacle, 1 if it is
+            obj_right: 1 if the obstacle is on the right, 0 if it is on the left
+            obstacle: 0 if there is no obstacle, 1 if there is one
+            actuation: the actuation commands to control the wheels' motors
+
+    outputs:
+            actuation: the actuation commands to control the wheels' motors 
+    '''
     w_l_test = [50,  25, -20, 0, 0,  30, -10]
     w_r_test = [0, 0, -20,  25,  50, -10,  30]
     speed_turn_left = [125,300]       #Actuation for turning left
@@ -127,7 +159,7 @@ async def collision_avoidance(path, node, pos, avoidance_mode, segment_index, ob
 
     # Let's read the proximity sensors
     await node.wait_for_variables()
-    prox = node['prox.horizontal']     # Lire les valeurs des capteurs de proximité
+    prox = node['prox.horizontal'] 
    
     # Let's check if there is an obstacle in front of the robot
     avoidance_mode, obstacle, obj_right, obstacle_pos =  object_detection(prox, avoidance_mode, obstacle, obj_right, obstacle_pos, pos)
