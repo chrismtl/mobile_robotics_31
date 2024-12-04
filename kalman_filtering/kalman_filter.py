@@ -6,10 +6,10 @@ B = np.array([[T_s, 0], [0, T_s], [1, 0], [0, 1]])
 C = np.eye(4)
 
 # Covariance matrices
-q_px = 0.1
-q_py = 0.1
-q_vx = 0.1 #0.0008 #measured
-q_vy = 0.1 #0.0008 #measured
+q_px = 2
+q_py = 2
+q_vx = 3 #0.0008 #measured
+q_vy = 3 #0.0008 #measured
 Q = np.diag([q_px, q_py, q_vx, q_vy])
 
 cov_thymio_vx = 22.6
@@ -71,3 +71,23 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     cov_est = cov_predict - np.dot(K,np.dot(C, cov_predict))
      
     return mu_est, cov_est
+
+def check_angle(kalman_angle , robot_angle):
+    """
+    Compares the estimated robot angle with the measured angle 
+
+    param angle: robot angle from kalman
+    param robot_angle: measured robot angle by the camera
+    
+    return est_angle: estimated robot angle
+
+    note: strongly inspired from the Kalman filer algorithm provided in the solutions of the exercises session 7
+    """
+    diff_angle = abs(kalman_angle-robot_angle)
+
+    if diff_angle <= np.pi/2:
+        est_angle = kalman_angle
+    else:
+        est_angle = robot_angle
+
+    return est_angle

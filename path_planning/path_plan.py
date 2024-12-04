@@ -204,6 +204,8 @@ def path_direction(coordinates, nodes_slopes, segment_index):
         return speed, segment_index, end    
 
 
+
+
     #find the angle of the slope and set the speed
     angle_err = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
 
