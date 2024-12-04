@@ -8,6 +8,7 @@ def test_camera():
 
         cv.imshow('Video', frame)
         if cv.waitKey(20) & 0xFF==ord('d'):
+            capture.release()
             break
 
 def test_onimage():

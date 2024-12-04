@@ -14,9 +14,16 @@ Q = np.diag([q_px, q_py, q_vx, q_vy])
 
 cov_thymio_vx = 22.6
 cov_thymio_vy = 22.6
+cov_thymio_px = 0.1
+cov_thymio_py = 0.004
+
 speed_coeff = 0.04 #conversion factor to get thymio's speed in cm/s
-px_conv_x = 6.58 #px/cm
-px_conv_y = 7.68 #px/cm
+SCREEN_WIDTH = 640
+MAP_WIDTH_CM = 97.2
+px_conv_x = SCREEN_WIDTH/MAP_WIDTH_CM #px/cm
+SCREEN_HEIGHT = 480
+MAP_HEIGHT_CM = 62.5
+px_conv_y = SCREEN_HEIGHT/MAP_HEIGHT_CM #px/cm
 
 def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     """
@@ -33,9 +40,10 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
 
     note: strongly inspired from the Kalman filer algorithm provided in the solutions of the exercises session 7
     """
-    
+
     # Predicition through the a previous state estimate
     mu_predict = np.dot(A, mu_predict_old) + np.dot(B, u_old)
+    #print("Mu prediction:", mu_predict)
     
     # Estimated covariance of the state from the previous state covariance
     cov_predict = np.dot(A, np.dot(cov_predict_old, A.T)) + Q
@@ -44,14 +52,14 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     i = y - np.dot(C, mu_predict)
     
     # Prediction of the measurement covariance
-    r_vx = cov_thymio_vx * speed_coeff**2 * px_conv_x**2
-    r_vy = cov_thymio_vy * speed_coeff**2 * px_conv_y**2
+    r_vx = cov_thymio_vx * speed_coeff**2 * px_conv_x**2 # covariance in px^2/s^2
+    r_vy = cov_thymio_vy * speed_coeff**2 * px_conv_y**2 # covariance in px^2/s^2
     if not robot_found: # measurement for the position isn't reliable
         r_px = 10000000 
         r_py = 10000000
     else:
-        r_px = 0.1 #measured
-        r_py = 0.004 #measured
+        r_px = cov_thymio_px
+        r_py = cov_thymio_py
     R = np.diag([r_px, r_py, r_vx, r_vy])
     S = np.dot(C, np.dot(cov_predict, C.T)) + R
              
@@ -61,6 +69,5 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found):
     # Next state estimate and covariance
     mu_est = mu_predict + np.dot(K,i)
     cov_est = cov_predict - np.dot(K,np.dot(C, cov_predict))
-    #print(mu_est)
      
     return mu_est, cov_est
