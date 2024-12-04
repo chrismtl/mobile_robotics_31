@@ -184,6 +184,12 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     Param3 = 150
     end = 0
 
+    #check if we're at the final distination
+    if segment_index == (M-1):
+        end = 1
+        speed[:] = [0,0]
+        return speed, segment_index, end
+    
     #check if we're close to the end of the segment
     distance_segm = ((nodes_slopes[segment_index+1,1]-y_mean)**2 + (nodes_slopes[segment_index+1,0]-x_mean)**2)**0.5
 
@@ -191,11 +197,13 @@ def path_direction(coordinates, nodes_slopes, segment_index):
         #means we're at the end of the segment
         segment_index += 1
 
-        #check if we're at the final distination
+    #check if we're at the final distination
     if segment_index == (M-1):
         end = 1
         speed[:] = [0,0]
         return speed, segment_index, end
+
+
 
 
     #find the angle of the slope and set the speed

@@ -10,9 +10,14 @@ async def stop_thymio(node): # The center
     
 def velocity_with_odometry(node, angle):
     speed_coeff = 0.04 #conversion factor to get thymio's speed in cm/s
-    px_conv_x = 6.58 #px/cm
-    px_conv_y = 7.68 #px/cm
+    SCREEN_WIDTH = 640
+    MAP_WIDTH_CM = 97.2
+    px_conv_x = SCREEN_WIDTH/MAP_WIDTH_CM #px/cm
+    SCREEN_HEIGHT = 480
+    MAP_HEIGHT_CM = 62.5
+    px_conv_y = SCREEN_HEIGHT/MAP_HEIGHT_CM #px/cm
     motors_speed = np.array([node["motor.left.speed"], node["motor.right.speed"]])
+    print("Raw vel:", motors_speed[0], motors_speed[1])
     vel = np.average(motors_speed)
     vel_x = vel * np.cos(angle) * speed_coeff * px_conv_x
     vel_y = vel * np.sin(angle) * speed_coeff * px_conv_y
