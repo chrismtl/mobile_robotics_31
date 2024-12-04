@@ -5,14 +5,9 @@
 
 # %%
 import numpy as np
-from shapely.geometry import LineString, Polygon,Point
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
+from shapely.geometry import LineString, Polygon
 from heapq import heappush, heappop
-from numpy import array
 from numpy.linalg import norm
-import math
-from math import atan
 
 
 # %%
@@ -31,9 +26,9 @@ def path_functions(shortest_path):
 
     output: 
         nodes_slopes = M x 5 (M = number of nodes in the shortest path), where 
-        each row represents the node's coordinates along with the 
-        alpha and beta coefficients, the last colomn represents the direction 
-        of the slope.
+            each row represents the node's coordinates along with the 
+            alpha and beta coefficients, the last colomn represents the direction 
+            of the slope.
     """
 
     M = shortest_path.shape[0]
@@ -79,6 +74,11 @@ def a_star_search(points,ex_path):
     output: 
         shortest_path: M X 2 (M = # of corners in the shortest path), A list 
             of corner indices representing the shortest path from start to goal.
+
+            
+    Note: This implementation is heavily inspired by the A* algorithm provided in 
+          the solution to the 5th exercise session of the Mobile Robotics course.
+
     """
 
     
@@ -175,14 +175,20 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     y_mean = coordinates[1]
     x_mean = coordinates[0]
     theta_mean = coordinates[2]
-    #theta_mean = math.radians(theta_mean) #si angle en degres
 
     tolerance_norm = 25
-    angle_tolerance = 0.17 # is almost equal 10°
-    Param1 = 0.5 #depend de l'unité
+    angle_tolerance = 0.17 # in radian is almost equal 10°
+    Param1 = 0.5 
     Param2 = 200 
     Param3 = 150
     end = 0
+
+    #check if we're already at the final distination
+    if segment_index == (M-1):
+        end = 1
+        speed[:] = [0,0]
+        return speed, segment_index, end    
+
 
     #check if we're close to the end of the segment
     distance_segm = ((nodes_slopes[segment_index+1,1]-y_mean)**2 + (nodes_slopes[segment_index+1,0]-x_mean)**2)**0.5
@@ -191,15 +197,17 @@ def path_direction(coordinates, nodes_slopes, segment_index):
         #means we're at the end of the segment
         segment_index += 1
 
-        #check if we're at the final distination
+    #check if we've reached the final distination
     if segment_index == (M-1):
         end = 1
         speed[:] = [0,0]
-        return speed, segment_index, end
+        return speed, segment_index, end    
+
+
 
 
     #find the angle of the slope and set the speed
-    angle_err,angle_diff = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
+    angle_err = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])
 
     if abs(angle_err) > angle_tolerance:
         speed[0] = angle_err*Param2
@@ -230,9 +238,9 @@ def angle_error(x_rob,y_rob, theta_rob, x_fin, y_fin):
     """
 
     angle_slope = np.arctan2((y_fin-y_rob), (x_fin-x_rob))
-    angle_diff = angle_slope - theta_rob
-    angle_err = (angle_diff + np.pi) % (2 * np.pi) - np.pi
-    return angle_err,angle_diff
+    diff_angle = angle_slope - theta_rob
+    angle_err = (diff_angle + np.pi) % (2 * np.pi) - np.pi
+    return angle_err
     
 # err = angle_error(0,0, (-1*math.pi)/2, 0, 1)
 # print(err)
@@ -244,15 +252,15 @@ def compute_visibility_matrix(start,end,obstacles):
     Compute a visibility matrix
 
     input:
-        start point
-        end point
+        start point : start position of the robot
+        end point : end point; where the robot needs to stop
         obstacles: List of obstacles, each as a list of extended 
                    corner coordinates [[(x1, y1), ...], ...]
     
     output:
         Visibility_mat : (N x N) Visibility_mat(i,j) is equal to 1 if a path exist between the ith corner
                             and the jth corner, if not  it's equal to 0.
-        corners
+        corners: (1 X N) a list of corners
     """
     # Convert start and end points to single-point obstacles
     start_obstacle = [start]
@@ -271,7 +279,7 @@ def compute_visibility_matrix(start,end,obstacles):
 
     obstacle_polygons = []
     for obs in obstacles:
-        if len(obs) >= 3:  # A valid polygon requires at least 3 points
+        if len(obs) >= 3:
             obstacle_polygons.append(Polygon(obs))
     obstacle_polygons = np.array(obstacle_polygons)
 
@@ -311,15 +319,21 @@ def compute_visibility_matrix(start,end,obstacles):
 
     return matrix, corners
 
+
+
 def are_adjacent_corners(corner1, corner2, obstacle_corners):
     """
     Check if two corners are adjacent in the obstacle.
+
+    input:
+        corner1: First corner (x, y)
+        corner2: Second corner (x, y)
+        obstacle_corners: List of corners of the obstacle
     
-    :param corner1: First corner (x, y)
-    :param corner2: Second corner (x, y)
-    :param obstacle_corners: List of corners of the obstacle
-    :return: True if the corners are adjacent, False otherwise
+    output:
+        True if the corners are adjacent, False otherwise
     """
+
     n = len(obstacle_corners)
     for i in range(n):
         if (np.array_equal(obstacle_corners[i], corner1) and 
@@ -331,6 +345,21 @@ def are_adjacent_corners(corner1, corner2, obstacle_corners):
 # %%
 
 def possible_lignes(ex_path, corners):
+    """
+    Returns a matrix representing all possible lines (connections) 
+    between corners based on the adjacency matrix.
+
+    input:
+        ex_path: N X N, is equal to 1 if two corners are directly connected 
+              by a line that does not cross any obstacle, and 0 otherwise
+        corners: N x 2 array N = (# of corners) 
+
+    output:
+        lignes: An M x 4 matrix where each row represents a line. 
+            Each line is defined by the coordinates of two corners: [x1, y1, x2, y2], 
+            representing a direct connection between those corners.
+                  
+    """
 
     N = ex_path.shape[0]
     lignes = []
