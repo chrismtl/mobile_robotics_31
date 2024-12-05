@@ -37,10 +37,10 @@ def kalman_filter(y, vel_old, mu_est_old, cov_est_old, robot_found, dt):
     q_var_px = (df1_dv**2)*(VAR_THYMIO_V) #0.27
     q_var_py = (df2_dv**2)*(VAR_THYMIO_V) #0.27
     q_var_theta = (df3_domega**2)*(VAR_THYMIO_OMEGA) #0.000124
-    print("Prediction covariances:", q_var_px, q_var_py, q_var_theta)
-    q_cov_px_py = 0#(df1_dv * df2_dv)*(VAR_THYMIO_VL + VAR_THYMIO_VR) 
-    q_cov_px_theta = 0#(df1_dv * df3_dv)*(VAR_THYMIO_VR - VAR_THYMIO_VL)
-    q_cov_py_theta = 0#(df2_dv * df3_dv)*(VAR_THYMIO_VR - VAR_THYMIO_VL)  
+    q_cov_px_py = (df1_dv * df2_dv)*(VAR_THYMIO_V) 
+    q_cov_px_theta = 0
+    q_cov_py_theta = 0
+    #print("Prediction covariances:", q_var_px, q_var_py, q_var_theta, q_cov_px_py)
     Q = np.array([[      q_var_px,    q_cov_px_py, q_cov_px_theta], 
                   [   q_cov_px_py,       q_var_py, q_cov_py_theta],
                   [q_cov_px_theta, q_cov_py_theta,    q_var_theta]])
@@ -60,12 +60,12 @@ def kalman_filter(y, vel_old, mu_est_old, cov_est_old, robot_found, dt):
 
     # Dynamic of command
     #B = (WHEEL_RADIUS*dt/2)*np.array([[np.cos(mu_predict_old[2]), np.cos(mu_predict_old[2])], [np.sin(mu_predict_old[2]), np.sin(mu_predict_old[2])], [1/WHEEL_AXLE_LENGTH, -1/WHEEL_AXLE_LENGTH]])
-    B = np.array([[np.cos(mu_est_old[2])*dt, 0], [np.sin(mu_est_old[2])*dt, 0], [0, -dt]])
+    B = np.array([[np.cos(mu_est_old[2])*dt, 0], [np.sin(mu_est_old[2])*dt, 0], [0, dt]])
     
     # Predicition through the a previous state estimate
     u_old = np.zeros(2)
     u_old[0] = ((0.5*(vel_old[0]+vel_old[1]))*SPEED_COEFF)*PIXEL_PER_CM # [px/s]
-    u_old[1] = (((0.5/WHEEL_AXLE_LENGTH)*(vel_old[1]-vel_old[0]))*SPEED_COEFF)*PIXEL_PER_CM # [rad/s]
+    u_old[1] = (((0.5/WHEEL_AXLE_LENGTH)*(vel_old[0]-vel_old[1]))*SPEED_COEFF)*PIXEL_PER_CM # [rad/s]
     mu_predict = np.dot(A, mu_est_old) + np.dot(B, u_old)   
     
     # Estimated covariance of the state from the previous state covariance
@@ -82,5 +82,6 @@ def kalman_filter(y, vel_old, mu_est_old, cov_est_old, robot_found, dt):
     # Next state estimate and covariance
     mu_est = mu_predict + np.dot(K,i)
     cov_est = cov_predict - np.dot(K,np.dot(C, cov_predict))
+    print("Estimated theta:", mu_est[2])
      
     return mu_est, cov_est

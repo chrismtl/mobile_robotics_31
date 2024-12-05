@@ -27,7 +27,7 @@ def test_pre_update():
     map = Map()
     while True:
         map.pre_update()
-        if cv.waitKey(20) & 0xFF==ord('d'):
+        if cv.waitKey(20) & 0xFF==ord('q'):
             break
 
 if __name__ == "__main__":
