@@ -28,13 +28,13 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
     aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY_CORNER)
     aruco_parameters =  cv.aruco.DetectorParameters()
    
-    # Detect ArUco markers in the video frame
+    # Detect ArUco markers in the frame
     (corners, ids, rejected) = cv.aruco.detectMarkers(
         frame, aruco_dictionary, parameters=aruco_parameters)
     
     # Set default ids to None
-    center_4 = [None]*3
-    center_5 = [None]*3
+    marker_r = [None]*3
+    marker_d = [None]*3
     
     # Check that at least one ArUco marker was detected
     if ids is not None:
@@ -75,14 +75,14 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
             (rx,ry,rz) = get_rotations(rotation_matrix)
             
             if marker_id==AT_ROBOT:
-                center_4 = [center_x,center_y,np.radians(rz)]
+                marker_r = [center_x,center_y,np.radians(rz)]
             if marker_id==AT_DESTINATION:
-                center_5 = [center_x,center_y,treated_corners]
+                marker_d = [center_x,center_y,treated_corners]
             
             i+=1
         
-    return {4:center_4,
-            5:center_5}
+    return {AT_ROBOT:marker_r,
+            AT_DESTINATION:marker_d}
 
 def get_corner_arucos(frame):
     """

@@ -37,14 +37,12 @@ def kalman_filter(y, vel_old, mu_est_old, cov_est_old, robot_found, dt):
     df3_domega = dt
 
     # Prediction covariance noise
-    # cst = 0.5
     q_var_px = (df1_dv**2)*(VAR_THYMIO_V) #0.27
     q_var_py = (df2_dv**2)*(VAR_THYMIO_V) #0.27
     q_var_theta = (df3_domega**2)*(VAR_THYMIO_OMEGA) #0.000124
     q_cov_px_py = (df1_dv * df2_dv)*(VAR_THYMIO_V) 
     q_cov_px_theta = 0
     q_cov_py_theta = 0
-    #print("Prediction covariances:", q_var_px, q_var_py, q_var_theta, q_cov_px_py)
     Q = np.array([[      q_var_px,    q_cov_px_py, q_cov_px_theta], 
                   [   q_cov_px_py,       q_var_py, q_cov_py_theta],
                   [q_cov_px_theta, q_cov_py_theta,    q_var_theta]])
