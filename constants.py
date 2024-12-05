@@ -63,9 +63,9 @@ WHEEL_AXLE_LENGTH = 9.5 * PIXEL_PER_CM # wheels axle length [px]
 # Measurement covariances
 # cov_thymio_px = 0.1
 # cov_thymio_py = 0.004
-VAR_THYMIO_PX = 0.0007 # [px^2]
-VAR_THYMIO_PY = 0.16 # [px^2]
-VAR_THYMIO_THETA = 0.002 # [rad^2]
+VAR_THYMIO_PX = 0.0048 # [px^2]
+VAR_THYMIO_PY = 0.0095 # [px^2]
+VAR_THYMIO_THETA = 0.0002 # [rad^2]
 VAR_THYMIO_VL = 39.84 * (SPEED_COEFF**2) * (PIXEL_PER_CM**2) # [px^2/s^2]
 VAR_THYMIO_VR = 23.33 * (SPEED_COEFF**2) * (PIXEL_PER_CM**2) # [px^2/s^2]
 VAR_THYMIO_V = (0.5**2)*(VAR_THYMIO_VL+VAR_THYMIO_VR) # [px^2/s^2]
