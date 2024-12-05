@@ -33,7 +33,6 @@ class Map:
         self.edges = None
         self.obstacles_lines = []
         self.target_lines = []
-        self.current_segment = 0
         self.pose_est = 3*[None]
         
         # Load the camera parameters from the saved file
@@ -227,9 +226,8 @@ class Map:
                     cv.line(frame, obstacles_line[0:2], obstacles_line[2:4], (0,0,0), 1)
 
             #Draw shortest path
-            path = [self.robot] + self.target_lines[self.current_segment+1:]
-            for i in range(1, path):
-                cv.line(frame, path[i-1], path[i], PATH_COLOR, 3)
+            for i in range(1, len(self.target_lines)):
+                cv.line(frame, self.target_lines[i-1], self.target_lines[i], PATH_COLOR, 3)
             
             cv.imshow('Frame', frame)
             cv.imshow('Edges', self.edges)
