@@ -180,7 +180,7 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     tolerance_norm = 25
     angle_tolerance = 0.17 # in radian is almost equal 10°
     Param1 = 0.5 
-    Param2 = 200 
+    Param2 = 100 
     Param3 = 150
     end = 0
 
@@ -238,7 +238,7 @@ def angle_error(x_rob,y_rob, theta_rob, x_fin, y_fin):
     angle_slope = np.arctan2((y_fin-y_rob), (x_fin-x_rob))
     diff_angle = angle_slope - theta_rob
     # Normalize the angle difference to the range [-π, π]
-    angle_err = (diff_angle + np.pi) % (2 * np.pi) - np.pi
+    angle_err = (diff_angle + 3*np.pi) % (2 * np.pi) - np.pi
     return angle_err
     
 # err = angle_error(0,0, (-1*math.pi)/2, 0, 1)
@@ -315,15 +315,16 @@ def compute_visibility_matrix(start,end,obstacles):
                         matrix[i, j] = 0
                         break
 
+    # check if the corner is inside the map borders
     index_to_deleted = []
     for i in range(N):
-        if (corners[i,0] < 0 or corners[i,0] > (SCREEN_WIDTH - 0 ) or
-            corners[i,1] < 0 or corners[i,1] > (SCREEN_HEIGHT - 0 )):
+        if (corners[i,0] < 0 or corners[i,0] > SCREEN_WIDTH  or
+            corners[i,1] < 0 or corners[i,1] > SCREEN_HEIGHT):
             index_to_deleted.append(i)
 
-
+    # delete all the corners that are not inside the map
     for i in index_to_deleted[::-1]:
-        matrix = np.delete(matrix, i, axis=0)  # Supprimer la ligne i
+        matrix = np.delete(matrix, i, axis=0)  
         matrix = np.delete(matrix, i, axis=1)
         corners = np.delete(corners, i, axis=0 )
 
@@ -386,15 +387,15 @@ def possible_lignes(ex_path, corners):
 
 # %% test
 
-# obstacles = [
-#     [(0, 0), (1, 0), (1, 1), (0, 1)],  
-#     [(2, 2), (3, 2), (3, 3), (2, 3)] ,
-# ]
-# start= (0,0)
-# end = (4,4)
-# matrix,corners = compute_visibility_matrix(start,end,obstacles)
-# opt_path = a_star_search(start,end,corners,matrix)
-# print(opt_path)
+obstacles = [
+    [(0, 0), (1, 0), (1, 1), (0, 1)],  
+    [(2, 2), (4, 2), (4,4), (2, 4)] ,
+]
+start= (3,3)
+end = (5,5)
+matrix,corners = compute_visibility_matrix(start,end,obstacles)
+opt_path = a_star_search(corners,matrix)
+print(opt_path)
 
 
  
