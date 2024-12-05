@@ -187,16 +187,18 @@ class Map:
             robot_x = self.robot[0]
             robot_y = self.robot[1]
             robot_angle = self.robot[2]
+            robot_color = ROBOT_COLOR
             if not self.found_robot:
                 robot_x = self.pose_est[0]
                 robot_y = self.pose_est[1]
                 robot_angle = self.pose_est[2]
+                #robot_color = KALMAN_COLOR
             
             end_x = int(robot_x + 75 * np.cos(robot_angle))
             end_y = int(robot_y - 75 * -np.sin(robot_angle))
             end_point = (end_x, end_y)
             cv.arrowedLine(frame, (int(self.robot[0]),int(self.robot[1])), end_point, ROBOT_ARROW_COLOR, D_ARROW_LINE_WIDTH, tipLength=0.2)
-            cv.circle(frame, self.robot[0:2],D_ROBOT_CIRCLE_RADIUS,ROBOT_COLOR,-1)
+            cv.circle(frame, self.robot[0:2],D_ROBOT_CIRCLE_RADIUS,robot_color,-1)
 
             # Draw robot's estimated pose
             end_x_est = int(self.pose_est[0] + 75 * np.cos(self.pose_est[2]))
