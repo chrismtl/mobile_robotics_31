@@ -160,12 +160,12 @@ class Map:
         contours = [contour for contour in contours if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
         # Approximate the contour to a polygon and extract corners
         for contour in contours:
-            epsilon = 0.1 * cv.arcLength(contour, True)  # 2% of the perimeter
+            epsilon = 0.02 * cv.arcLength(contour, True)  # 2% of the perimeter
             approx_corners = cv.approxPolyDP(contour, epsilon, True)
 
             if len(approx_corners) >= 3:  # Ensure it's a valid polygon
                 corners = approx_corners.reshape(-1, 2) # Extract the corners
-                #corners = remove_close_points(corners) # Remove duplicates
+                corners = remove_close_points(corners) # Remove duplicates
                 corners = augment_corners(corners) # Compute augmented obstacle
                 valid_obstacle = not on_points(corners,
                                                 [self.found_robot,self.found_destination],
