@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from .aruco import *
 from .geometry import *
-from ..constants import *
+from constants import *
 
 def rescaleFrame(frame, scale=0.3):
     height = int(frame.shape[0] * scale)
@@ -30,6 +30,7 @@ class Map:
         self.found_robot = False
         self.found_destination = False
         self.obstacles = []
+        self.edges = None
         self.obstacles_lines = []
         self.target_lines = []
         self.pose_est = 3*[None]
@@ -153,7 +154,7 @@ class Map:
         # Detect contours
         contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         # Show edge detection
-        if CV_DRAW: cv.imshow("Edges", frame)
+        self.edges = frame
         # Remove area out of range obstacles
         contours = [contour for contour in contours if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
         # Approximate the contour to a polygon and extract corners
@@ -173,8 +174,10 @@ class Map:
                     self.obstacles.append(corners)  # Add the obstacles to our obstacle list
 
     def show(self):
-        # Show the camera capture and draw our info on it
+        # Show the different vision windows
+        # Draw frame
         frame = self.frame.copy()
+        raw_frame = self.raw_frame.copy()
         if self.found_corners:
             #Draw reference frame
             cv.line(frame, (0,0), (50,0), X_AXIS_COLOR, 6)
@@ -227,8 +230,18 @@ class Map:
             #Draw shortest path
             for i in range(1, len(self.target_lines)):
                 cv.line(frame, self.target_lines[i-1], self.target_lines[i], PATH_COLOR, 3)
-            
-        cv.imshow('Vision', frame)
+
+            # Draw raw frame plus green region of interest
+            cv.line(raw_frame, self.map_corners['top_left'], self.map_corners['top_right'], (0, 255, 0), 10)
+            cv.line(raw_frame, self.map_corners['top_right'], self.map_corners['bottom_right'], (0, 255, 0), 10)
+            cv.line(raw_frame, self.map_corners['bottom_right'], self.map_corners['bottom_left'], (0, 255, 0), 10)
+            cv.line(raw_frame, self.map_corners['bottom_left'], self.map_corners['top_left'], (0, 255, 0), 10)
+
+            cv.imshow('Frame', frame)
+            cv.imshow('Edges', self.edges)
+
+        cv.imshow('Raw frame', raw_frame)
+        
     
     def set_raw_frame(self,frame):
         self.raw_frame = frame
