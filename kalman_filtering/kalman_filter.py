@@ -35,7 +35,7 @@ def kalman_filter(y, u_old, mu_predict_old, cov_predict_old, robot_found, dt):
     df3_dv = (WHEEL_RADIUS*dt/(2*WHEEL_AXLE_LENGTH))
 
     # Prediction covariance noise
-    cst = 0.1
+    cst = 100000000
     q_var_px = cst#(df1_dv**2)*(VAR_THYMIO_VL + VAR_THYMIO_VR)
     q_var_py = cst#(df2_dv**2)*(VAR_THYMIO_VL + VAR_THYMIO_VR)
     q_var_theta = cst#(df3_dv**2)*(VAR_THYMIO_VL + VAR_THYMIO_VR)
