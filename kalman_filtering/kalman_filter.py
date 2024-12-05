@@ -75,6 +75,7 @@ def kalman_filter(vel_old, mu_est_old, cov_est_old, robot_found, dt):
     u_old = np.zeros(2)
     u_old[0] = ((0.5*(vel_old[0]+vel_old[1]))*SPEED_COEFF)*PIXEL_PER_CM # [px/s]
     u_old[1] = (((0.5/WHEEL_AXLE_LENGTH)*(vel_old[0]-vel_old[1]))*SPEED_COEFF)*PIXEL_PER_CM # [rad/s]
+    
     mu_predict = np.dot(A, mu_est_old) + np.dot(B, u_old)   
 
     G_prev_k = np.array([[1, 0, -np.sin(mu_predict[2])*dt*mu_predict[3], np.cos(mu_predict[2])*dt, 0], 
