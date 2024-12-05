@@ -116,7 +116,6 @@ class Map:
         if setup:
             self.find_corners()
             if self.found_corners:
-                self.draw_roi()
                 self.find_thymio_destination()
                 self.pose_est = self.robot.copy()
                 self.detect_global_obstacles([self.found_robot,self.found_destination])
@@ -124,13 +123,6 @@ class Map:
             self.find_thymio_destination()
 
         self.show()
-    
-    def draw_roi(self):
-        corners = list(self.map_corners.keys())
-        for i in range(len(corners)):
-            start = self.map_corners[corners[i]]
-            end = self.map_corners[corners[(i + 1) % len(corners)]]
-            cv.line(self.raw_frame, (start), (end), (0, 255, 0), 10)
     
     def find_thymio_destination(self):
         # Scan the aruco tag of the robot and the destination
@@ -182,8 +174,10 @@ class Map:
                     self.obstacles.append(corners)  # Add the obstacles to our obstacle list
 
     def show(self):
-        # Show the camera capture and draw our info on it
+        # Show the different vision windows
+        # Draw frame
         frame = self.frame.copy()
+        raw_frame = self.raw_frame.copy()
         if self.found_corners:
             #Draw reference frame
             cv.line(frame, (0,0), (50,0), X_AXIS_COLOR, 6)
@@ -236,10 +230,17 @@ class Map:
             #Draw shortest path
             for i in range(1, len(self.target_lines)):
                 cv.line(frame, self.target_lines[i-1], self.target_lines[i], PATH_COLOR, 3)
-            
+
+            # Draw raw frame plus green region of interest
+            cv.line(raw_frame, self.map_corners['top_left'], self.map_corners['top_right'], (0, 255, 0), 10)
+            cv.line(raw_frame, self.map_corners['top_right'], self.map_corners['bottom_right'], (0, 255, 0), 10)
+            cv.line(raw_frame, self.map_corners['bottom_right'], self.map_corners['bottom_left'], (0, 255, 0), 10)
+            cv.line(raw_frame, self.map_corners['bottom_left'], self.map_corners['top_left'], (0, 255, 0), 10)
+
             cv.imshow('Frame', frame)
             cv.imshow('Edges', self.edges)
-        cv.imshow('Raw frame', self.raw_frame)
+
+        cv.imshow('Raw frame', raw_frame)
         
     
     def set_raw_frame(self,frame):
