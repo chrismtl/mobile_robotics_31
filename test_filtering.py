@@ -8,6 +8,9 @@ from constants import *
 
 # %%
 
+dimension_x = 3
+dimension_z = 3
+
 # Creating the filter
 f = KalmanFilter(dim_x=dimension_x, dim_z=dimension_z) # state and measurement variables are x, y and theta
 
@@ -27,7 +30,7 @@ f.Q = np.diag(process_variances)
 
 # %%
 
-def run_filter( u_old, mu_predict_old, robot_found, dt, map)
+def run_filter( u_old, mu_predict_old, robot_found, dt, map):
                 #speed_right, speed_left, prev_angle, vis):
 
     global f
@@ -46,7 +49,7 @@ def run_filter( u_old, mu_predict_old, robot_found, dt, map)
                     [(-dt/WHEEL_AXLE_LENGTH), (dt/WHEEL_AXLE_LENGTH)]]) * (WHEEL_RADIUS*dt/2)
     
     # Getting camera measurements and conveting to [m]
-    measurement = np.array([mu_predict_old[0]/camera_scale, mu_predict_old[1]/camera_scale, mu_predict_old[2]])
+    measurement = np.array([mu_predict_old[0]/PIXEL_PER_CM, mu_predict_old[1]/PIXEL_PER_CM, mu_predict_old[2]])
     
     # Predict step of kalman filter with control input
     f.predict(u = u, B = B)
@@ -55,11 +58,11 @@ def run_filter( u_old, mu_predict_old, robot_found, dt, map)
         f.update(measurement)
 
     # Defining the estimate in camera coordinates
-    estimate = np.array([f.x[0,0] * PIXEL_PER_CM *100, f.x[1,0] * PIXEL_PER_CM *100, f.x[2,0]])
+    estimate = np.array([f.x[0,0] * PIXEL_PER_CM, f.x[1,0] * PIXEL_PER_CM , f.x[2,0]])
 
-    # Plotting an ellipse to show evolution of uncertainty along x and y
-    cv2.ellipse(map.copy, (int(estimate[0]), int(estimate[1])), (int(200 * f.P[0,0]), int(200 * f.P[1,1])), math.degrees(f.x[2,0]),0,360,(255,0,0),3)
-    # Plotting a line to show the angle estimate
-    cv2.line(map.copy, (int(estimate[0]), int(estimate[1])), (int(estimate[0] + 100*np.cos(estimate[2])), int(estimate[1] + 100*np.sin(estimate[2]))), (255,0,0), 3)
+    # # Plotting an ellipse to show evolution of uncertainty along x and y
+    # cv2.ellipse(map.copy, (int(estimate[0]), int(estimate[1])), (int(200 * f.P[0,0]), int(200 * f.P[1,1])), math.degrees(f.x[2,0]),0,360,(255,0,0),3)
+    # # Plotting a line to show the angle estimate
+    # cv2.line(map.copy, (int(estimate[0]), int(estimate[1])), (int(estimate[0] + 100*np.cos(estimate[2])), int(estimate[1] + 100*np.sin(estimate[2]))), (255,0,0), 3)
     
     return estimate # Return the kalman filtered state
