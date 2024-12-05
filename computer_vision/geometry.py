@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from constants import *
+from ..constants import *
+import cv2 as cv
 
 def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
     """
