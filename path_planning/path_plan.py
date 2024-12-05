@@ -8,6 +8,7 @@ import numpy as np
 from shapely.geometry import LineString, Polygon
 from heapq import heappush, heappop
 from numpy.linalg import norm
+from constants import *
 
 
 # %%
@@ -258,7 +259,7 @@ def compute_visibility_matrix(start,end,obstacles):
     output:
         Visibility_mat : (N x N) Visibility_mat(i,j) is equal to 1 if a path exist between the ith corner
                             and the jth corner, if not  it's equal to 0.
-        corners: (1 X N) a list of corners
+        corners: ( N x 2) a list of corners
     """
     # Convert start and end points to single-point obstacles
     start_obstacle = [start]
@@ -314,6 +315,16 @@ def compute_visibility_matrix(start,end,obstacles):
                         matrix[i, j] = 0
                         break
 
+    index_to_deleted = []
+    for i in range(N):
+        if (corners[i,0] < ROBOT_RADIUS_PIXEL or corners[i,0] > (SCREEN_WIDTH - D_ROBOT_CIRCLE_RADIUS ) or
+            corners[i,1] < ROBOT_RADIUS_PIXEL or corners[i,1] > (SCREEN_HEIGHT - D_ROBOT_CIRCLE_RADIUS )):
+            index_to_deleted.append(i)
+
+    for i in index_to_deleted:
+        matrix = np.delete(matrix, i, axis=0)  # Supprimer la ligne i
+        matrix = np.delete(matrix, i, axis=1)
+        corners = np.delete(corner, i, axis=0 )
 
     return matrix, corners
 
