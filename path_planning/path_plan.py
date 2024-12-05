@@ -180,7 +180,7 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     tolerance_norm = 25
     angle_tolerance = 0.17 # in radian is almost equal 10°
     Param1 = 0.5 
-    Param2 = 200 
+    Param2 = 60 
     Param3 = 150
     end = 0
 
@@ -238,7 +238,7 @@ def angle_error(x_rob,y_rob, theta_rob, x_fin, y_fin):
     angle_slope = np.arctan2((y_fin-y_rob), (x_fin-x_rob))
     diff_angle = angle_slope - theta_rob
     # Normalize the angle difference to the range [-π, π]
-    angle_err = (diff_angle + np.pi) % (2 * np.pi) - np.pi
+    angle_err = (diff_angle + 3*np.pi) % (2 * np.pi) - np.pi
     return angle_err
     
 # err = angle_error(0,0, (-1*math.pi)/2, 0, 1)
