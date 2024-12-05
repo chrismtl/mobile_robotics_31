@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from . import geometry as geom
+from .geometry import *
 from constants import *
 
 # CONSTANTS
@@ -72,7 +72,7 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
             # Store the rotation information
             rotation_matrix = np.eye(4)
             rotation_matrix = cv.Rodrigues(np.array(rvecs[i][0]))[0]
-            (rx,ry,rz) = geom.get_rotations(rotation_matrix)
+            (rx,ry,rz) = get_rotations(rotation_matrix)
             
             if marker_id==AT_ROBOT:
                 center_4 = [center_x,center_y,np.radians(rz)]

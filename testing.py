@@ -1,5 +1,7 @@
 from computer_vision.vision import *
-
+import os
+# Change path of the execution ot the path of file's directory 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def test_camera():
     capture = cv.VideoCapture(0)
@@ -13,7 +15,8 @@ def test_camera():
 
 def test_onimage():
     map = Map()
-    test_frame  = cv.imread("computer_vision/test_map.png")
+    test_frame  = cv.imread("computer_vision/test_map.jpg")
+    map.set_raw_frame(test_frame)
     map.set_frame(test_frame)
     map.detect_global_obstacles()
     map.show()
@@ -28,4 +31,4 @@ def test_pre_update():
             break
 
 if __name__ == "__main__":
-    test_camera()
+    test_onimage()
