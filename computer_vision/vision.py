@@ -116,6 +116,7 @@ class Map:
         if setup:
             self.find_corners()
             if self.found_corners:
+                self.draw_roi()
                 self.find_thymio_destination()
                 self.pose_est = self.robot.copy()
                 self.detect_global_obstacles([self.found_robot,self.found_destination])
@@ -123,6 +124,13 @@ class Map:
             self.find_thymio_destination()
 
         self.show()
+    
+    def draw_roi(self):
+        corners = list(self.map_corners.keys())
+        for i in range(len(corners)):
+            start = self.map_corners[corners[i]]
+            end = self.map_corners[corners[(i + 1) % len(corners)]]
+            cv.line(self.raw_frame, (start), (end), (0, 255, 0), 10)
     
     def find_thymio_destination(self):
         # Scan the aruco tag of the robot and the destination
