@@ -239,7 +239,7 @@ def angle_error(x_rob,y_rob, theta_rob, x_fin, y_fin):
     angle_slope = np.arctan2((y_fin-y_rob), (x_fin-x_rob))
     diff_angle = angle_slope - theta_rob
     # Normalize the angle difference to the range [-π, π]
-    angle_err = (diff_angle + 3*np.pi) % (2 * np.pi) - np.pi
+    angle_err = (diff_angle + np.pi) % (2 * np.pi) - np.pi
     return angle_err
     
 # err = angle_error(0,0, (-1*math.pi)/2, 0, 1)
