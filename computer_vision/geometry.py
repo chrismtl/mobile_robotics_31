@@ -1,10 +1,19 @@
-import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from constants import *
+from ..constants import *
 import cv2 as cv
 
 def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
+    """
+    Removes points in a list that are closer than a given threshold
+
+    Args:
+        corners (list): list of points
+        threshold (float, optional): Minimal distance between points. Defaults to MIN_OBSTACLE_SEGMENT_LENGTH.
+
+    Returns:
+        clean_corners (list): list with the close points removed
+    """
     # Create a new list
     clean_corners = corners.copy()
     
@@ -26,6 +35,19 @@ def remove_close_points(corners, threshold=MIN_OBSTACLE_SEGMENT_LENGTH):
     return clean_corners
 
 def on_points(corners, detected, points, limits):
+    """
+    From a list of points (corners) tells if a point is on a target point (closer than given limit).
+
+    Args:
+        corners (list,list,int): Treated points
+        detected (list,bool): gives info on whether the target is detected or not
+        points (list,list,int): target points
+        limits (list,float): minimal distance between a treated point and a target point
+
+    Returns:
+        True: the point is on one of the targets
+        False: the point is not on one of the target
+    """
     if len(points)==len(limits)==len(detected):
         for point,limit,detect in zip(points,limits,detected):
             if not detect: continue
@@ -33,10 +55,22 @@ def on_points(corners, detected, points, limits):
             if dist_to_point<limit:
                 return True
         return False
-    print("ERROR: Size of arguments on on_points")
+    if P_VISION: print("ERROR: Size of arguments on on_points")
     return False
 
 def find_peak(corners, i):
+    """
+    From a given set of points (polygon) gives the augmented point of corner i,
+    defined by the offset point such that the distance between the offset point and
+    the corner is the robot radius. (used to augment the obstacles)
+
+    Args:
+        corners (list,list,int): list of 2D points
+        i (int): index of the point in corners to treat
+
+    Returns:
+        offset point
+    """
     # Compute left and right corners
     corner = np.array(corners[i])
     left_corner  = np.array(corners[(i-1)%len(corners)])
@@ -56,6 +90,16 @@ def find_peak(corners, i):
     return corner + corner_vector
     
 def augment_corners(corners):
+    """
+    From a list of points (corners) return a new list of augmented points,
+    which are all extended by a distance of *ROBOT_RADIUS_PIXEL*
+
+    Args:
+        corners (list,int): list of points
+
+    Returns:
+        augmented_corners: list of augmented points
+    """
     augmented_corners = []
 
     # Iterate through each pair of consecutive corners
@@ -88,20 +132,29 @@ def euler_from_quaternion(x, y, z, w):
     """
     t0 = +2.0 * (w * x + y * z)
     t1 = +1.0 - 2.0 * (x * x + y * y)
-    roll_x = math.atan2(t0, t1)
+    roll_x = np.arctan2(t0, t1)
         
     t2 = +2.0 * (w * y - z * x)
     t2 = +1.0 if t2 > +1.0 else t2
     t2 = -1.0 if t2 < -1.0 else t2
-    pitch_y = math.asin(t2)
+    pitch_y = np.arcsin(t2)
         
     t3 = +2.0 * (w * z + x * y)
     t4 = +1.0 - 2.0 * (y * y + z * z)
-    yaw_z = math.atan2(t3, t4)
+    yaw_z = np.arctan2(t3, t4)
         
     return roll_x, pitch_y, yaw_z # in radians
 
 def get_rotations(rotation_matrix):
+    """
+    Compute the euler angle for a given rotation matrix
+
+    Args:
+        rotation_matrix (matrix)
+
+    Returns:
+        (roll_x,pitch_y,yaw_z): Euler angles
+    """
     r = R.from_matrix(rotation_matrix[0:3, 0:3])
     quat = r.as_quat()
 
@@ -117,23 +170,8 @@ def get_rotations(rotation_matrix):
                                                 transform_rotation_z, 
                                                 transform_rotation_w)
     
-    roll_x = round(math.degrees(roll_x), 2)
-    pitch_y = round(math.degrees(pitch_y), 2)
-    yaw_z = round(math.degrees(yaw_z), 2)
+    roll_x = round(np.degrees(roll_x), 2)
+    pitch_y = round(np.degrees(pitch_y), 2)
+    yaw_z = round(np.degrees(yaw_z), 2)
 
     return (roll_x,pitch_y,yaw_z)
-
-def get_rotations_chat(matrix):
-    sy = math.sqrt(matrix[0, 0]**2 + matrix[1, 0]**2)
-    singular = sy < 1e-6
-
-    if not singular:
-        x = math.atan2(matrix[2, 1], matrix[2, 2])
-        y = math.atan2(-matrix[2, 0], sy)
-        z = math.atan2(matrix[1, 0], matrix[0, 0])
-    else:
-        x = math.atan2(-matrix[1, 2], matrix[1, 1])
-        y = math.atan2(-matrix[2, 0], sy)
-        z = 0
-
-    return np.degrees([x, y, z])

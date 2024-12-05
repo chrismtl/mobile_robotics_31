@@ -1,3 +1,6 @@
+"""
+Dynamical Constant file containing every chosen constants for our project.
+"""
 # FILES
 CAMERA_CALIBRATION_FILE = 'computer_vision\\calibration_chessboard.yaml'
 
@@ -14,7 +17,7 @@ EPSILON = 5
 LINE_THICKNESS = 1
 FIRST_FRAME = 100            # First frame to analyse
 MARKER_SIZE_ROBOT = 0.037    # Side length of the ArUco marker in meters 
-FIRST_FRAME = 15            # First frame to analyse
+FIRST_FRAME = 15             # First frame to analyse
 ROBOT_RADIUS = 200
 
 # METRICS
@@ -23,9 +26,7 @@ SCREEN_HEIGHT = 480
 MAP_HEIGHT_CM = 62.5
 MAP_WIDTH_CM = 97.2
 ROBOT_RADIUS_CM = 10
-PIXEL_PER_CM_WIDTH = SCREEN_WIDTH/MAP_WIDTH_CM
-PIXEL_PER_CM_HEIGHT = SCREEN_HEIGHT/MAP_HEIGHT_CM
-PIXEL_PER_CM = max(PIXEL_PER_CM_WIDTH, PIXEL_PER_CM_HEIGHT)
+PIXEL_PER_CM = SCREEN_WIDTH/MAP_WIDTH_CM
 ROBOT_RADIUS_PIXEL = int(ROBOT_RADIUS_CM * PIXEL_PER_CM)
 TARGET_RADIUS_PIXEL = int(100 * MARKER_SIZE_ROBOT * PIXEL_PER_CM)
 

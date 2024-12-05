@@ -1,6 +1,5 @@
 import cv2 as cv
 import numpy as np
-import math
 from . import geometry as geom
 from constants import *
 
@@ -8,7 +7,23 @@ from constants import *
 ARUCO_DICTIONARY_CORNER = cv.aruco.DICT_4X4_50
 
 def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
+    """
+    Scan the Aruco Tags of the Robot and the destination
     
+    Args:
+        frame: image snapshot of the camera
+        marker_size (int): Size of the aruco marker in meters
+        camera_matrix: Camera calibration matrix
+        dist_coeffs: Camera calibration coefficients
+
+    Returns:
+        if markers found:
+            aruco_markers = { ROBOT_TAG_ID: [center_x, center_y, angle],
+                              DESTINATION_TAG_ID: [center_x, center_y, corners]}
+        else:
+            aruco_markers = { ROBOT_TAG_ID: [center_x, center_y, angle],
+                              DESTINATION_TAG_ID: [center_x, center_y, corners]}
+    """
     # Load the ArUco dictionary
     aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY_CORNER)
     aruco_parameters =  cv.aruco.DetectorParameters()
@@ -57,10 +72,10 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
             # Store the rotation information
             rotation_matrix = np.eye(4)
             rotation_matrix = cv.Rodrigues(np.array(rvecs[i][0]))[0]
-            (rx,ry,rz) = geom.get_rotations_chat(rotation_matrix)
+            (rx,ry,rz) = geom.get_rotations(rotation_matrix)
             
             if marker_id==AT_ROBOT:
-                center_4 = [center_x,center_y,math.radians(rz)]
+                center_4 = [center_x,center_y,np.radians(rz)]
             if marker_id==AT_DESTINATION:
                 center_5 = [center_x,center_y,treated_corners]
             
@@ -70,6 +85,21 @@ def get_rt_arucos(frame, marker_size, camera_matrix, dist_coeffs):
             5:center_5}
 
 def get_corner_arucos(frame):
+    """
+    Find the four aruco tags of the map corners
+
+    Args:
+        frame : image camera snapshot
+
+    Returns:
+        if markers found:
+            aruco_markers = { valid: True,
+                              *corner*: *bottom_right corner pixel coordinates*}
+        else:
+            aruco_markers = { valid: False,
+                              ids: *ids found*}
+
+    """
     # Load the ArUco dictionary
     aruco_dictionary = cv.aruco.getPredefinedDictionary(ARUCO_DICTIONARY_CORNER)
     aruco_parameters =  cv.aruco.DetectorParameters()

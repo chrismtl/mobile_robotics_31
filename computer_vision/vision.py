@@ -1,10 +1,8 @@
-import os
 import cv2 as cv
 import numpy as np
 from .aruco import *
-from scipy.spatial.transform import Rotation as R
 from .geometry import *
-from constants import *
+from ..constants import *
 
 def rescaleFrame(frame, scale=0.3):
     height = int(frame.shape[0] * scale)
@@ -50,6 +48,7 @@ class Map:
             self.success = False
     
     def info(self):
+        # Print method to display essential info of the current Map instance
         print(P_INFO)
         print(f"* FOUND CORNERS: {self.found_corners}\n")
         
@@ -66,6 +65,7 @@ class Map:
         print(P_END)
     
     def snap(self):
+        # Capture a frame from the camera and if possible crop the Region of Interest
         self.success, self.raw_frame = self.capture.read()
         if not(self.success) and P_VISION:
             print("ERROR: Could not read image from camera")
@@ -73,7 +73,7 @@ class Map:
             self.flatten_scene()
     
     def find_corners(self):
-        # Get aruco in the corners
+        # Get the four aruco in the corners of the captured frame
         self.map_corners = get_corner_arucos(self.raw_frame)
 
         # Check if it found the 4 corners
@@ -87,6 +87,7 @@ class Map:
                 print(f"WARNING: Detected aruco corners \n{self.map_corners['ids']}")
 
     def flatten_scene(self):
+        # From the four detected aruco corners, crop out and flatten our region of interest using opencv
         inner_corners = np.array([
             self.map_corners['top_left'],
             self.map_corners['top_right'],
@@ -109,6 +110,7 @@ class Map:
             self.success = False
     
     def update(self, setup=False):
+        # Capture a new frame and update the class attributes
         self.snap()
         if setup:
             self.find_corners()
@@ -122,6 +124,7 @@ class Map:
         self.show()
     
     def find_thymio_destination(self):
+        # Scan the aruco tag of the robot and the destination
         aruco_markers = get_rt_arucos(self.frame, MARKER_SIZE_ROBOT, self.camera_matrix, self.dist_coeffs)
         
         if not None in aruco_markers[AT_ROBOT]:
@@ -170,6 +173,7 @@ class Map:
                     self.obstacles.append(corners)  # Add the obstacles to our obstacle list
 
     def show(self):
+        # Show the camera capture and draw our info on it
         frame = self.frame.copy()
         if self.found_corners:
             #Draw reference frame
@@ -184,16 +188,16 @@ class Map:
                 robot_x = self.pose_est[0]
                 robot_y = self.pose_est[1]
                 robot_angle = self.pose_est[2]
-             
-            end_x = int(robot_x + 75 * math.cos(robot_angle))
-            end_y = int(robot_y - 75 * -math.sin(robot_angle))
+            
+            end_x = int(robot_x + 75 * np.cos(robot_angle))
+            end_y = int(robot_y - 75 * -np.sin(robot_angle))
             end_point = (end_x, end_y)
             cv.arrowedLine(frame, (int(self.robot[0]),int(self.robot[1])), end_point, ROBOT_ARROW_COLOR, D_ARROW_LINE_WIDTH, tipLength=0.2)
             cv.circle(frame, self.robot[0:2],D_ROBOT_CIRCLE_RADIUS,ROBOT_COLOR,-1)
 
             # Draw robot's estimated pose
-            end_x_est = int(self.pose_est[0] + 75 * math.cos(self.pose_est[2]))
-            end_y_est = int(self.pose_est[1] - 75 * -math.sin(self.pose_est[2]))
+            end_x_est = int(self.pose_est[0] + 75 * np.cos(self.pose_est[2]))
+            end_y_est = int(self.pose_est[1] - 75 * -np.sin(self.pose_est[2]))
             end_point_est = (end_x_est, end_y_est)
             
             cv.circle(frame, (int(self.pose_est[0]),int(self.pose_est[1])),D_ROBOT_CIRCLE_RADIUS,(255,0,0),-1)
