@@ -154,7 +154,7 @@ def a_star_search(points,ex_path):
 # %%
 def path_direction(coordinates, nodes_slopes, segment_index):
     """
-    Find the right motor speed so the robot follows the rigth seglent
+    Find the right motor speed so the robot follows the right segment
 
     input: 
         coordinates: 1 x 3 array, where:
@@ -202,9 +202,6 @@ def path_direction(coordinates, nodes_slopes, segment_index):
         end = 1
         speed[:] = [0,0]
         return speed, segment_index, end
-
-
-
 
     #find the angle of the slope and set the speed
     angle_err,angle_diff = angle_error(x_mean,y_mean, theta_mean, nodes_slopes[segment_index+1,0], nodes_slopes[segment_index+1,1])

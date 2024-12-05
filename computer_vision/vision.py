@@ -4,7 +4,7 @@ import numpy as np
 from .aruco import *
 from scipy.spatial.transform import Rotation as R
 from .geometry import *
-from ..constants import *
+from constants import *
 
 def rescaleFrame(frame, scale=0.3):
     height = int(frame.shape[0] * scale)

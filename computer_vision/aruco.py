@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 import math
 from . import geometry as geom
-from ..constants import *
+from constants import *
 
 # CONSTANTS
 ARUCO_DICTIONARY_CORNER = cv.aruco.DICT_4X4_50
