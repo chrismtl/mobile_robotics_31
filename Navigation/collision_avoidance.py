@@ -83,7 +83,7 @@ def segment_check(path, pos, avoidance_mode, segment_index, obstacle, obstacle_p
             fx_min = fx_min
             fx_max = fx_max
 
-            if ((pose_y_min <= fx_max <= pose_y_max) or (pose_y_min <= fx_min <= pose_y_max))and(distance_to_obstacle>30):
+            if ((pose_y_min <= fx_max <= pose_y_max) or (pose_y_min <= fx_min <= pose_y_max))and(distance_to_obstacle>30)or(distance_to_obstacle>=160):
                 if (avoidance_mode == 0):
                     segment_index = i
                 else:
