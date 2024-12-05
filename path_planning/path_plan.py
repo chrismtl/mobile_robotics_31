@@ -316,13 +316,10 @@ def compute_visibility_matrix(start,end,obstacles):
                         break
 
     index_to_deleted = []
-    print("index to delete:")
     for i in range(N):
         if (corners[i,0] < 0 or corners[i,0] > (SCREEN_WIDTH - 0 ) or
             corners[i,1] < 0 or corners[i,1] > (SCREEN_HEIGHT - 0 )):
             index_to_deleted.append(i)
-            print(i)
-            print(corners[i])
 
 
     for i in index_to_deleted[::-1]:
