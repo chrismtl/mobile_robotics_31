@@ -118,7 +118,7 @@ class Map:
             if self.found_corners:
                 self.find_thymio_destination()
                 self.pose_est = self.robot.copy()
-                self.detect_global_obstacles([self.found_robot,self.found_destination])
+                self.detect_global_obstacles()
         else:
             self.find_thymio_destination()
 
@@ -141,35 +141,36 @@ class Map:
         elif P_VISION:
             print("WARNING: Destination not found")
     
-    def detect_global_obstacles(self, detected_list):
+    def detect_global_obstacles(self):
         # Clear previous obstacles
         self.obstacles = []
         # Create local copy of the frame that we will use for treatment
         frame = self.frame.copy()
-        # Detect edges
+        # Convert to grayscale
         frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         # Blur the image
         frame = cv.GaussianBlur(frame, (5, 5),0)
+        # Detect edges
         frame = cv.Canny(frame, 50, 150)
         # Detect contours
         contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-        # Show edge detection
+        # Store edge detection
         self.edges = frame
         # Remove area out of range obstacles
         contours = [contour for contour in contours if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
         # Approximate the contour to a polygon and extract corners
         for contour in contours:
-            epsilon = 0.025 * cv.arcLength(contour, True)  # 2% of the perimeter
+            epsilon = 0.1 * cv.arcLength(contour, True)  # 2% of the perimeter
             approx_corners = cv.approxPolyDP(contour, epsilon, True)
-        
+
             if len(approx_corners) >= 3:  # Ensure it's a valid polygon
                 corners = approx_corners.reshape(-1, 2) # Extract the corners
-                corners = geom.remove_close_points(corners) # Remove duplicates
-                corners = geom.augment_corners(corners) # Compute augmented obstacle
+                #corners = remove_close_points(corners) # Remove duplicates
+                corners = augment_corners(corners) # Compute augmented obstacle
                 valid_obstacle = not on_points(corners,
-                                               detected_list,
-                                               [self.robot[0:2],self.destination[0:2]],
-                                               [MIN_DIST_TO_ROBOT, MIN_DIST_TO_DESTINATION])
+                                                [self.found_robot,self.found_destination],
+                                                [self.robot[0:2],self.destination[0:2]],
+                                                [MIN_DIST_TO_ROBOT, MIN_DIST_TO_DESTINATION])
                 if valid_obstacle:   # Check if it is not the robot or on the destination
                     self.obstacles.append(corners)  # Add the obstacles to our obstacle list
 
