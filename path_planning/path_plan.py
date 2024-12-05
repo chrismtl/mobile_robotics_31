@@ -316,15 +316,19 @@ def compute_visibility_matrix(start,end,obstacles):
                         break
 
     index_to_deleted = []
+    print("index to delete:")
     for i in range(N):
-        if (corners[i,0] < ROBOT_RADIUS_PIXEL or corners[i,0] > (SCREEN_WIDTH - D_ROBOT_CIRCLE_RADIUS ) or
-            corners[i,1] < ROBOT_RADIUS_PIXEL or corners[i,1] > (SCREEN_HEIGHT - D_ROBOT_CIRCLE_RADIUS )):
+        if (corners[i,0] < 0 or corners[i,0] > (SCREEN_WIDTH - 0 ) or
+            corners[i,1] < 0 or corners[i,1] > (SCREEN_HEIGHT - 0 )):
             index_to_deleted.append(i)
+            print(i)
+            print(corners[i])
 
-    for i in index_to_deleted:
+
+    for i in index_to_deleted[::-1]:
         matrix = np.delete(matrix, i, axis=0)  # Supprimer la ligne i
         matrix = np.delete(matrix, i, axis=1)
-        corners = np.delete(corner, i, axis=0 )
+        corners = np.delete(corners, i, axis=0 )
 
     return matrix, corners
 
