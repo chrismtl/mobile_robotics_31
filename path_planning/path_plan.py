@@ -14,7 +14,8 @@ from constants import *
 # %%
 def heuristic(p1, p2):
     # Implement the Manhattan distance heuristic
-    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+    #return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+    return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 # %%
 def path_functions(shortest_path):
@@ -177,7 +178,7 @@ def path_direction(coordinates, nodes_slopes, segment_index):
     x_mean = coordinates[0]
     theta_mean = coordinates[2]
 
-    tolerance_norm = 25
+    tolerance_norm = 5
     angle_tolerance = 0.17 # in radian is almost equal 10°
     Param1 = 0.5 
     Param2 = 100 
