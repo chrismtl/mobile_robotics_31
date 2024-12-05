@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from .aruco import *
 from .geometry import *
-from ..constants import *
+from constants import *
 
 def rescaleFrame(frame, scale=0.3):
     height = int(frame.shape[0] * scale)
@@ -30,6 +30,7 @@ class Map:
         self.found_robot = False
         self.found_destination = False
         self.obstacles = []
+        self.edges = None
         self.obstacles_lines = []
         self.target_lines = []
         self.pose_est = 3*[None]
@@ -153,7 +154,7 @@ class Map:
         # Detect contours
         contours, _ = cv.findContours(frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         # Show edge detection
-        if CV_DRAW: cv.imshow("Edges", frame)
+        self.edges = frame
         # Remove area out of range obstacles
         contours = [contour for contour in contours if MIN_AREA <= cv.contourArea(contour) <= MAX_AREA]
         # Approximate the contour to a polygon and extract corners
@@ -228,7 +229,10 @@ class Map:
             for i in range(1, len(self.target_lines)):
                 cv.line(frame, self.target_lines[i-1], self.target_lines[i], PATH_COLOR, 3)
             
-        cv.imshow('Vision', frame)
+            cv.imshow('Frame', frame)
+            cv.imshow('Edges', self.edges)
+        cv.imshow('Raw frame', self.raw_frame)
+        
     
     def set_raw_frame(self,frame):
         self.raw_frame = frame
